@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Timers;
-
+using System.Runtime.InteropServices;
 
 namespace RobotSimulation
 {
@@ -18,7 +18,32 @@ namespace RobotSimulation
         public ModSmdRpbptControl()
         {
             InitializeComponent();
+
+            // Initialize the m_DISettings dictionary in the constructor
+            m_DISettings = new Dictionary<int, string>
+        {
+        { m_SMD_BarcodeReady, "AAP: IN_SMD_BARCODE_READY" },
+        { m_SMD_PlaceReady, "AAP: IN_SMD_PLACE_READY" },
+        { m_SMD_PickReady, "AAP: IN_SMD_PICKUP_READY" },
+        { m_SMD_Reset, "AAP: IN_SMD_RESET" }
+        };
+
         }
+
+        // Import the user32.dll library and declare the SendMessage function
+        [DllImport("user32.dll")]
+        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+
+        // Define the message constants you want to use
+        private const int WM_USER = 0x0400; // Custom message base
+        private const int UM_CUSTOM_MESSAGE = WM_USER + 1; // Custom message ID
+
+        public void SendCustomMessage(IntPtr hWnd, int wParam, int lParam)
+        {
+            // Use SendMessage to send a custom message to the specified window
+            SendMessage(hWnd, UM_CUSTOM_MESSAGE, new IntPtr(wParam), new IntPtr(lParam));
+        }
+
         private int m_doReady;
         private int m_doInspectionDone;
         private int m_doBarcodeOK;
@@ -26,6 +51,15 @@ namespace RobotSimulation
         private int m_doReelIsNotRegistred;
         private string m_barcode;
         private bool m_barcodeIsNG;
+
+        public bool registered = false; //need to include from chipcounter form
+        public bool m_bReelIsNotRegistered = true; //need to include from chipcounter form
+
+        private int m_SMD_Reset;
+        private int m_SMD_BarcodeReady;
+        private int m_SMD_PlaceReady;
+        private int m_SMD_PickReady;
+
         private string who = "SMDrobot: ";
 
         private int m_barcodeRead;
@@ -64,6 +98,10 @@ namespace RobotSimulation
         public event Action SmdBarcodeNGEvent;
         public event Action SmdSetTvReelIsNotRegisteredEvent;
         public event Action<bool> SmdBarcodeReadyEvent;
+        public event Action<bool> SmdPickupReadyEvent;
+        public event Action<bool> SmdPlaceReadyEvent;
+        public event Action<bool> SmdResetEvent;
+
 
         private bool IsEnable()
         {
@@ -110,18 +148,103 @@ namespace RobotSimulation
             TvInspectionDoneEvent += param => SetTvInspectionDone();
             TvBarcodeOKEvent += param => SetTvBarcodeOK();
             TvBarcodeNGEvent += param => SetTvBarcodeNG(param);
-            TvReelIsNotRegisteredEvent += param => SetTvReelIsNotRegistered(param,true);
+            TvReelIsNotRegisteredEvent += param => SetTvReelIsNotRegistered(param, true);
 
             // High level events
             SmdRobotInitEvent += () => SmdRobotInit();
-            SmdSendInspectionDoneEvent += (param1, param2) => SmdSendInspectionDone(param1,param2);
+            SmdSendInspectionDoneEvent += (param1, param2) => SmdSendInspectionDone(param1, param2);
             SmdSendTvReadyEvent += param => SmdSendTvReady(param);
-            SmdSendPickupOrReadyEvent += (param1, param2, param3) => SmdSendPickupOrReady(param1,param2,param3);
+            SmdSendPickupOrReadyEvent += (param1, param2, param3) => SmdSendPickupOrReady(param1, param2, param3);
             SmdBarcodeOKEvent += param => SmdBarcodeOK(param);
             SmdBarcodeNGEvent += () => SmdBarcodeNG();
             SmdSetTvReelIsNotRegisteredEvent += () => SmdSetTvReelIsNotRegistered();
             SmdBarcodeReadyEvent += param => SmdBarcodeReady(param);
+            SmdPickupReadyEvent += param => SmdPickupReady(param);
+            SmdPlaceReadyEvent += param => SmdPlaceReady(param);
+            SmdResetEvent += param => SmdReset(param);
+
+    }
+
+        private Dictionary<int, string> m_DISettings;
+
+        public void HandleDIPlusSettings(
+        int data,
+        int dwIoState,
+        Action<int, int> messageTarget,
+        int umCode,
+        Dictionary<int, string> m_DISettings,
+        string errorString)
+        {
+            foreach (var kvp in m_DISettings)
+            {
+                int setting = kvp.Key;
+                string description = kvp.Value;
+                HandleDIPlus(data, dwIoState, setting, messageTarget, umCode, description, errorString);
+            }
         }
+
+
+        public void HandleDIPlus(int ioOld, int ioNew, int di, Action<int,int> messageTarget, int umCode, string logStr, string ErrorStr)
+        {
+            if (!IsValidIO(di) || m_bGoHomeStarted)
+            {
+                ErrorStr = string.Empty;
+                return;
+            }
+
+            bool newValue = (ioNew & (1u << di)) != 0;
+            bool oldValue = (ioOld & (1u << di)) != 0;
+
+            if (newValue != oldValue)
+            {
+                UserMessage(logStr + " DI" + di + "=" + newValue, EVS_DEBUG);
+
+                if (newValue && m_nGoHomeState == GOHOME_DOES_NOT_FINISHED)
+                {
+                    GoHome(out ErrorStr);
+                }
+                else
+                {
+                    if (messageTarget != null)
+                    {
+                        messageTarget.BeginInvoke((MethodInvoker)(() =>
+                        {
+                            // This code is to ensure we're posting the message to the UI thread
+                            messageTarget.PostMessage(umCode, di, (IntPtr)(newValue ? 1 : 0), IntPtr.Zero);
+                            
+                    }));
+                    }
+                    
+                }
+            }
+            else
+            {
+                ErrorStr = string.Empty;
+            }
+        }
+        
+
+        private bool IsValidIO(int di)
+        {
+            // Implement the IsValidIO logic
+            return true;
+        }
+
+        private bool m_bGoHomeStarted;
+        private int m_nGoHomeState;
+
+        public void GoHome(out string ErrorStr)
+        {
+            // Implement the GoHome logic
+            ErrorStr = string.Empty;
+        }
+
+
+        private const int GOHOME_DOES_NOT_FINISHED = 0;
+
+
+
+
 
         #endregion
         ////////////////////////////////////////////////////////////////////////////////
@@ -475,6 +598,117 @@ namespace RobotSimulation
                 SmdBarcodeReadyEvent?.Invoke(param);
             }
         }
+        void SmdPlaceReady(bool param)
+        {
+            if (!IsEnable())
+                return;
+
+            UserMessage(who + "<-- SMD PLACE READY " + param, EVS_DEBUG);
+
+            bool placeWasStarted = false;
+
+            if (param)
+            {
+                placeWasStarted = true;
+
+                SetTvReady(false);
+
+                // NOTE: Do not reset BARCODE OK and BARCODE NG signals
+                //const bool forcibly =
+                //    g_StartupData.m_ccParams.Get<bool>(CChipCounterTaskParams::kSmdForcedSetIO, false);
+                //SmdRobotControl::get().SetTvBarcodeOK(false, forcibly);
+                //SmdRobotControl::get().SetTvBarcodeNG(false, forcibly);
+            }
+            else if (placeWasStarted)
+            {
+                placeWasStarted = false;
+
+                string barcode = "Barcode1"; //SmdRobotControl::get().Barcode(); //need to include from chipcounter form or imageviewer
+                if (m_bReelIsNotRegistered)
+                {
+                    UserMessage(who + "Skip UM_START_SCANNING. Reel is not registered.", EVS_WARN);
+                    SmdSetTvReelIsNotRegistered();
+                }
+                else if (!string.IsNullOrEmpty(barcode))
+                {
+                    UserMessage(who + "Send UM_START_SCANNING " + barcode, EVS_DEBUG);
+                    //Autostart needed here
+                    //Autostart();
+                }
+                else
+                {
+                    UserMessage(who + "Skip UM_START_SCANNING. Barcode is empty", EVS_WARN);
+                    SmdBarcodeNG();
+                }
+            }
+        }
+
+        public void SmdPickupReady(bool param)
+        {
+            if (IsEnable())
+                return;
+
+            UserMessage($"{who} <-- SMD PICKUP READY {param}", EVS_DEBUG);
+
+            if (param)
+            {
+
+                SetTvInspectionDone();
+                SetTvReelIsNotRegistered(false, true);
+            }
+            else
+            {
+                SetTvReelIsNotRegistered(false, false);
+                SetTvInspectionDone();
+                SetTvBarcodeNG(false);
+                SetTvBarcodeOK();
+                SetTvReady(true);
+            }
+        }
+
+
+        public void SmdReset(bool param)
+        {
+            UserMessage($"{who} <-- SMD RESET {param}", EVS_DEBUG);
+
+            bool smdRobotEnable = false; // Replace this with your logic to get the enable status.
+
+            if (!smdRobotEnable)
+                return;
+
+            if (param)
+            {
+                // Just ignore?
+                // ++++> or try to unload the stage if it is not scanning?
+                // or initialize the stage?
+
+                // Remove barcode from barcode list in case of received SMD RESET signal
+                m_barcode = "";
+
+                UserMessage($"{who} Send UM_PARKING_STAGE UNLOAD_STAGE", EVS_DEBUG);
+
+                if (gpio.GetIn(GPIO_DEF.IN_STATGE_IN_SENSOR))
+                {
+                    gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
+                }
+                else if(!gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
+                {
+                    gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
+                }
+
+                while (true)
+                {
+                    if (gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
+                    {
+                        gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, false);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // You will need to define or replace UM_CLEAR_LAST_BARCODE, UM_PARKING_STAGE, and UNLOAD_STAGE with the appropriate values or constants.
+
 
 
         #endregion
@@ -559,6 +793,7 @@ namespace RobotSimulation
         }
 
 
+
         #region Setup I/O signals numbers {
 
         public void SetupTvReadyDO(int outBit)
@@ -591,7 +826,32 @@ namespace RobotSimulation
             m_doReelIsNotRegistred = outBit; //13
         }
 
+        public void SetSMD_Reset(int inBit) 
+        {
+            UserMessage(who + "Set OUT_TV_REEL_IS_NOT_REGISTERED : " + inBit.ToString());
+            m_SMD_Reset = inBit; //12
+        }
+        public void SetSMD_BarcodeReady(int inBit)
+        {
+            UserMessage(who + "Set OUT_TV_REEL_IS_NOT_REGISTERED : " + inBit.ToString());
+            m_SMD_BarcodeReady = inBit; //13
+        }
+        public void SetSMD_PlaceReady(int inBit)
+        {
+            UserMessage(who + "Set OUT_TV_REEL_IS_NOT_REGISTERED : " + inBit.ToString());
+            m_SMD_PlaceReady = inBit; //14
+        }
+        public void SetSMD_Pickup_Ready(int inBit)
+        {
+            UserMessage(who + "Set OUT_TV_REEL_IS_NOT_REGISTERED : " + inBit.ToString());
+            m_SMD_PickReady = inBit; //15
+        }
+
         #endregion
 
+        private void Form_Load(object sender, EventArgs e)
+        {
+            SmdRobotInit();
+        }
     }
 }

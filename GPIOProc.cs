@@ -26,6 +26,7 @@ namespace chip_counter
         public const int IN_REEL_SENSOR3 = 14;
         public const int IN_REEL_SENSOR4 = 15;
 
+
         //commented sensors -> the sensors which might be deleted in future. Not used in current configuration.
 
         // GPIO out list
@@ -42,7 +43,13 @@ namespace chip_counter
         public const int OUT_TOWER_RED = 10; //
         public const int OUT_TOWER_BUZZ = 11; //
 
-    };
+        /// for robot
+        public const int OUT_TV_INSPECTION_DONE = 1;
+        public const int OUT_TV_READY = 12;
+        public const int OUT_TV_REEL_IS_NOT_REGISTERED = 13;
+        public const int OUT_TV_BARCODE_OK = 14;
+        public const int OUT_TV_BARCODE_NG = 15;
+    }
 
     class GPIOProc
     {

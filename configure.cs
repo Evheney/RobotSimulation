@@ -1360,6 +1360,112 @@ namespace chip_counter
         }
 
     }
+    public class robot_configure : configure_ini
+    {
+        public robot_configure(string ini_filepath)
+        {
+        }
+
+        private int _robot_Type = 0;
+
+        private int InSMD_Reset;
+
+        private int tvReady = 12;
+        private int tvInspection = 1;
+        private int tvBarcodeOk = 14;
+        private int tvBarcodeNG = 15;
+        private int tvReelIsNotRegistered = 13;
+
+        private string _robot_name = "";
+
+        public string ROBOT_NAME
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "ROBOT_NAME", _robot_name);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "ROBOT_NAME", value); _robot_name = value;
+            }
+        }
+
+        public int ROBOT_TYPE
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "ROBOT_TYPE", _robot_Type);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "ROBOT_TYPE", value); _robot_Type = value;
+            }
+        }
+
+        public int TvReady
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "TVREADY", tvReady);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "TVREADY", value); tvReady = value;
+            }
+        }
+        public int TvInspection
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "TVINSPECTION", tvInspection);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "TVINSPECTION", value); tvInspection = value;
+            }
+        }
+        public int TvBarcodeOk
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "TVBARCODEOK", tvBarcodeOk);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "TVBARCODEOK", value); tvBarcodeOk = value;
+            }
+        }
+        public int TvBarcodeNG
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "TVBARCODENG", tvBarcodeNG);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "TVBARCODENG", value); tvBarcodeNG = value;
+            }
+        }
+        public int TvReelIsNotRegistered
+        {
+            get
+            {
+                return load("ROBOT_CONFIG", "TVREELISNOTREGISTERED", tvReelIsNotRegistered);
+            }
+
+            set
+            {
+                save("ROBOT_CONFIG", "TVREELISNOTREGISTERED", value); tvReelIsNotRegistered = value;
+            }
+        }
+
+    }
 
     public class configure : configure_ini
     {
