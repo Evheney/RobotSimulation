@@ -1,4 +1,4 @@
-﻿using chip_counter;
+﻿/*using chip_counter;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -62,10 +62,12 @@ namespace RobotSimulation
 
         private string who = "SMDrobot: ";
 
-        private int m_barcodeRead;
-        private int m_placeReady;
-        private int m_pickUpReady;
-        private int m_Reset;
+        //same as m_SMD so deleted
+
+        //private int m_barcodeRead;
+        //private int m_placeReady;
+        //private int m_pickUpReady;
+        //private int m_Reset;
 
         private static SmdRobotControl _instance = null;
         //private Timer m_timer = new Timer();
@@ -230,17 +232,19 @@ namespace RobotSimulation
             return true;
         }
 
-        private bool m_bGoHomeStarted;
-        private int m_nGoHomeState;
+        // maybe for future would be needed
 
-        public void GoHome(out string ErrorStr)
-        {
-            // Implement the GoHome logic
-            ErrorStr = string.Empty;
-        }
+        //private bool m_bGoHomeStarted;
+        //private int m_nGoHomeState;
+
+        //public void GoHome(out string ErrorStr)
+        //{
+        //    // Implement the GoHome logic
+        //    ErrorStr = string.Empty;
+        //}
 
 
-        private const int GOHOME_DOES_NOT_FINISHED = 0;
+        //private const int GOHOME_DOES_NOT_FINISHED = 0;
 
 
 
@@ -773,13 +777,13 @@ namespace RobotSimulation
                     int cmd = -1; // Initialize j to an invalid value
                     bool value = currentIOState[i];
 
-                    if (i == m_barcodeRead)
+                    if (i == m_SMD_BarcodeReady)
                         cmd = SMD_BARCODE_READY;
-                    else if (i == m_placeReady)
+                    else if (i == m_SMD_PlaceReady)
                         cmd = SMD_PLACE_READY;
-                    else if (i == m_pickUpReady)
+                    else if (i == m_SMD_PickReady)
                         cmd = SMD_PICKUP_READY;
-                    else if (i == m_Reset)
+                    else if (i == m_SMD_Reset)
                         cmd = SMD_RESET;
 
                     if (cmd != -1)
@@ -855,3 +859,4 @@ namespace RobotSimulation
         }
     }
 }
+*/
