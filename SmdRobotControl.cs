@@ -135,7 +135,7 @@ namespace chip_counter
         {
             //m_timer.Stop();
 
-            if (gpio.Init(info.config) != false)// && gpio.IO_IN.Get(m_doBarcodeOK))
+            if (gpio.Init(info.config) != false)// && gpio.IO_IN.Get(m_Out_doBarcodeOK))
             {
                 if (m_barcodeIsNG && val)
                 {

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows.Forms;
 
+
 namespace chip_counter
 {
     public partial class Form1 : Form
@@ -13,7 +14,10 @@ namespace chip_counter
             info.config = new configure(ini_filepath);
 
         }
-        SmdRobotControl control = SmdRobotControl.Instance;
+        //SmdRobotControl control = SmdRobotControl.Instance;
+        private bool m_forcibly = false;
+        ModSmdRobotControl control = ModSmdRobotControl.Instance;
+
         ChipCounterInfo info = ChipCounterInfo.Instance;
         GPIOProc gpio = GPIOProc.Instance;
 
@@ -34,22 +38,22 @@ namespace chip_counter
 
         private void SetTvReady_Click(object sender, EventArgs e)
         {
-            control.SetTvReady(true);
+            control.SetTvReady(true, m_forcibly);
         }
 
         private void SetTvInspectionDone_Click(object sender, EventArgs e)
         {
-            control.SetTvInspectionDone(true, false);
+            control.SetTvInspectionDone();
         }
 
         private void SetTvBarcodeOK_Click(object sender, EventArgs e)
         {
-            control.SetTvBarcodeOK(true, false);
+            control.SetTvBarcodeOK();
         }
 
         private void SetTvBarcodeNG_Click(object sender, EventArgs e)
         {
-            control.SetTvBarcodeNG(true, false);
+            control.SetTvBarcodeNG(true);
         }
 
         private void SetTvReelIsNotRegistered_Click(object sender, EventArgs e)
@@ -64,7 +68,7 @@ namespace chip_counter
 
         private void SetIOSettings_Click(object sender, EventArgs e)
         {
-            
+            Log.Debug("SetIOSettings_Click ");
             if (test % 2 == 0)
             {
                 control.SetupTvReadyDO(12);
@@ -112,22 +116,22 @@ namespace chip_counter
 
         private void SmdBarcodeReadyFunc_Click(object sender, EventArgs e)
         {
-            control.SmdBarcodeReadyFunc(1);
+            //control.SmdBarcodeReadyFunc(1);
         }
 
         private void SmdPlaceReadyFunc_Click(object sender, EventArgs e)
         {
-            control.SmdPlaceReadyFunc(2);
+            //control.SmdPlaceReadyFunc(2);
         }
 
         private void SmdPickupReadyFunc_Click(object sender, EventArgs e)
         {
-            control.SmdPickupReadyFunc(3);
+            //control.SmdPickupReadyFunc(3);
         }
 
         private void SmdResetFunc_Click(object sender, EventArgs e)
         {
-            control.SmdResetFunc(4);
+           // control.SmdResetFunc(4);
         }
 
         private void SmdRobotInit_Click(object sender, EventArgs e)
