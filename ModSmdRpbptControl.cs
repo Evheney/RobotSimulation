@@ -167,61 +167,61 @@ namespace RobotSimulation
 
         private Dictionary<int, string> m_DISettings;
 
-        public void HandleDIPlusSettings(
-        int data,
-        int dwIoState,
-        Action<int, int> messageTarget,
-        int umCode,
-        Dictionary<int, string> m_DISettings,
-        string errorString)
-        {
-            foreach (var kvp in m_DISettings)
-            {
-                int setting = kvp.Key;
-                string description = kvp.Value;
-                HandleDIPlus(data, dwIoState, setting, messageTarget, umCode, description, errorString);
-            }
-        }
+        //public void HandleDIPlusSettings(
+        //int data,
+        //int dwIoState,
+        //Action<int, int> messageTarget,
+        //int umCode,
+        //Dictionary<int, string> m_DISettings,
+        //string errorString)
+        //{
+        //    foreach (var kvp in m_DISettings)
+        //    {
+        //        int setting = kvp.Key;
+        //        string description = kvp.Value;
+        //        HandleDIPlus(data, dwIoState, setting, messageTarget, umCode, description, errorString);
+        //    }
+        //}
 
 
-        public void HandleDIPlus(int ioOld, int ioNew, int di, Action<int,int> messageTarget, int umCode, string logStr, string ErrorStr)
-        {
-            if (!IsValidIO(di) || m_bGoHomeStarted)
-            {
-                ErrorStr = string.Empty;
-                return;
-            }
+        //public void HandleDIPlus(int ioOld, int ioNew, int di, Action<int,int> messageTarget, int umCode, string logStr, string ErrorStr)
+        //{
+        //    if (!IsValidIO(di) || m_bGoHomeStarted)
+        //    {
+        //        ErrorStr = string.Empty;
+        //        return;
+        //    }
 
-            bool newValue = (ioNew & (1u << di)) != 0;
-            bool oldValue = (ioOld & (1u << di)) != 0;
+        //    bool newValue = (ioNew & (1u << di)) != 0;
+        //    bool oldValue = (ioOld & (1u << di)) != 0;
 
-            if (newValue != oldValue)
-            {
-                UserMessage(logStr + " DI" + di + "=" + newValue, EVS_DEBUG);
+        //    if (newValue != oldValue)
+        //    {
+        //        UserMessage(logStr + " DI" + di + "=" + newValue, EVS_DEBUG);
 
-                if (newValue && m_nGoHomeState == GOHOME_DOES_NOT_FINISHED)
-                {
-                    GoHome(out ErrorStr);
-                }
-                else
-                {
-                    if (messageTarget != null)
-                    {
-                        messageTarget.BeginInvoke((MethodInvoker)(() =>
-                        {
-                            // This code is to ensure we're posting the message to the UI thread
-                            messageTarget.PostMessage(umCode, di, (IntPtr)(newValue ? 1 : 0), IntPtr.Zero);
+        //        if (newValue && m_nGoHomeState == GOHOME_DOES_NOT_FINISHED)
+        //        {
+        //            GoHome(out ErrorStr);
+        //        }
+        //        else
+        //        {
+        //            if (messageTarget != null)
+        //            {
+        //                messageTarget.BeginInvoke((MethodInvoker)(() =>
+        //                {
+        //                    // This code is to ensure we're posting the message to the UI thread
+        //                    messageTarget.PostMessage(umCode, di, (IntPtr)(newValue ? 1 : 0), IntPtr.Zero);
                             
-                    }));
-                    }
+        //            }));
+        //            }
                     
-                }
-            }
-            else
-            {
-                ErrorStr = string.Empty;
-            }
-        }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        ErrorStr = string.Empty;
+        //    }
+        //}
         
 
         private bool IsValidIO(int di)

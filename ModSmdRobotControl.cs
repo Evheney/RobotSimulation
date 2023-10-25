@@ -96,7 +96,7 @@ namespace chip_counter
         public bool registered = false; //need to include from chipcounter form
         public bool m_bReelIsNotRegistered = true; //need to include from chipcounter form
 
-        private int m_In_Reset =12;
+        private int m_In_Reset = 12;
         private int m_In_BarcodeReady = 13;
         private int m_In_PlaceReady = 14;
         private int m_In_PickReady = 15;
@@ -196,8 +196,8 @@ namespace chip_counter
         {
             // Low level events
             TvReadyEvent += (param1, param2) => SetTvReady(param1, param2);
-            TvInspectionDoneEvent += param => SetTvInspectionDone();
-            TvBarcodeOKEvent += param => SetTvBarcodeOK();
+            TvInspectionDoneEvent += param => SetTvInspectionDone(param);
+            TvBarcodeOKEvent += param => SetTvBarcodeOK(param);
             TvBarcodeNGEvent += param => SetTvBarcodeNG(param);
             TvReelIsNotRegisteredEvent += param => SetTvReelIsNotRegistered(param, true);
 
@@ -301,7 +301,8 @@ namespace chip_counter
                 if (forced || prevState != val)
                 {
                     // Instead of changing GPIO state, raise an event
-                    TvReadyEvent?.Invoke(!prevState, false);
+                    //TvReadyEvent?.Invoke(!prevState, false);
+                    gpio.SetOut(m_doReady, val);
                 }
             }
             else
@@ -310,7 +311,7 @@ namespace chip_counter
             }
         }
         
-        public void SetTvInspectionDone()
+        public void SetTvInspectionDone(bool val)
         {
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
@@ -318,10 +319,11 @@ namespace chip_counter
             if (gpio.Init(info.config))
             {
                 bool prevState = gpio.IO_IN.Get(m_doInspectionDone);
-                if (prevState)
+                if (prevState != val)
                 {
                     // Instead of changing GPIO state, raise the event
-                    TvInspectionDoneEvent?.Invoke(true);
+                    //TvInspectionDoneEvent?.Invoke(true);
+                    gpio.SetOut(m_doInspectionDone, val);
                     ResetBarcode();
                 }
                 else
@@ -337,7 +339,7 @@ namespace chip_counter
             }
         }
 
-        public void SetTvBarcodeOK()
+        public void SetTvBarcodeOK(bool val)
         {
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
@@ -352,10 +354,11 @@ namespace chip_counter
                 else
                 {
                     bool prevState = gpio.IO_IN.Get(m_Out_doBarcodeOK);
-                    if (prevState)
+                    if (prevState != val)
                     {
                         // Raise the event based on the previous state
-                        TvBarcodeOKEvent?.Invoke(true);
+                        //TvBarcodeOKEvent?.Invoke(true);
+                        gpio.SetOut(m_Out_doBarcodeOK, val);
                     }
                     else
                     {
@@ -388,7 +391,8 @@ namespace chip_counter
                 if (prevState != val)
                 {
                     // Raise the event based on the previous state
-                    TvBarcodeNGEvent?.Invoke(val);
+                    //TvBarcodeNGEvent?.Invoke(val);
+                    gpio.SetOut(m_doBarcodeNG, val);
                 }
             }
             else
@@ -409,7 +413,8 @@ namespace chip_counter
                 if (prevState != val || forced)
                 {
                     // Raise the event based on the previous state
-                    TvReelIsNotRegisteredEvent?.Invoke(val);
+                    //TvReelIsNotRegisteredEvent?.Invoke(val);
+                    gpio.SetOut(m_doReelIsNotRegistred, val);
                 }
             }
             else
@@ -418,7 +423,7 @@ namespace chip_counter
                 UserMessage(who + "OUT_TV_REEL_IS_NOT_REGISTERED is not specified in McDataAlphaAap.xml", EVS_WARN);
 
                 // Additional actions (set other IO states)
-                SetTvBarcodeOK();
+                SetTvBarcodeOK(!val);
                 SetTvBarcodeNG(val);
             }
         }
@@ -486,7 +491,7 @@ namespace chip_counter
                 if (inspectionIsFinished && stageIsUnloaded)
                 {
                     const bool forcibly = false;
-                    SetTvInspectionDone();
+                    SetTvInspectionDone(true);
                 }
                 else if (!inspectionIsFinished)
                 {
@@ -515,9 +520,9 @@ namespace chip_counter
                 else
                 {
                     SetTvReelIsNotRegistered(false, m_forcibly);
-                    SetTvInspectionDone();
+                    SetTvInspectionDone(false);
                     SetTvBarcodeNG(false);
-                    SetTvBarcodeOK();
+                    SetTvBarcodeOK(false);
                     SetTvReady(true, m_forcibly);
                 }
 
@@ -544,7 +549,7 @@ namespace chip_counter
                 if (afterInspection && inspectionIsFinished)
                 {
                     const bool forcibly = false;
-                    SetTvInspectionDone();
+                    SetTvInspectionDone(true);
 
                     // Raise an event to indicate TV inspection is done
                     SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
@@ -552,9 +557,9 @@ namespace chip_counter
                 else if (!afterInspection)
                 {
                     SetTvReelIsNotRegistered(false, m_forcibly);
-                    SetTvInspectionDone();
+                    SetTvInspectionDone(false);
                     SetTvBarcodeNG(false);
-                    SetTvBarcodeOK();
+                    SetTvBarcodeOK(false);
                     SetTvReady(true, m_forcibly);
 
                     // Raise an event to indicate TV is ready
@@ -579,7 +584,7 @@ namespace chip_counter
                     const bool forcibly = false;
 
                     SetTvBarcodeNG(false);
-                    SetTvBarcodeOK();
+                    SetTvBarcodeOK(true);
 
                     // Raise an event to indicate that TV BARCODE OK is set
                     SmdBarcodeOKEvent?.Invoke(bc);
@@ -592,7 +597,7 @@ namespace chip_counter
             if (IsEnable())
             {
                 const bool forcibly = false;
-                SetTvBarcodeOK();
+                SetTvBarcodeOK(false);
                 SetTvBarcodeNG(true);
 
                 // Raise an event to indicate that TV BARCODE NG is set
@@ -693,15 +698,15 @@ namespace chip_counter
             if (param)
             {
 
-                SetTvInspectionDone();
+                SetTvInspectionDone(true);
                 SetTvReelIsNotRegistered(false, m_forcibly);
             }
             else
             {
                 SetTvReelIsNotRegistered(false, m_forcibly);
-                SetTvInspectionDone();
+                SetTvInspectionDone(false);
                 SetTvBarcodeNG(false);
-                SetTvBarcodeOK();
+                SetTvBarcodeOK(false);
                 SetTvReady(true, m_forcibly);
             }
         }
