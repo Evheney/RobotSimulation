@@ -43,12 +43,12 @@ namespace chip_counter
 
         private void SetTvInspectionDone_Click(object sender, EventArgs e)
         {
-            control.SetTvInspectionDone();
+            control.SetTvInspectionDone(true);
         }
 
         private void SetTvBarcodeOK_Click(object sender, EventArgs e)
         {
-            control.SetTvBarcodeOK();
+            control.SetTvBarcodeOK(true);
         }
 
         private void SetTvBarcodeNG_Click(object sender, EventArgs e)
