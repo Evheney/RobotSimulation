@@ -13,6 +13,8 @@ namespace chip_counter
             string ini_filepath = System.IO.Directory.GetCurrentDirectory() + "\\CHIP_COUNTER.INI";
             info.config = new configure(ini_filepath);
 
+            gpio.Init(info.config);
+
         }
         //SmdRobotControl control = SmdRobotControl.Instance;
         private bool m_forcibly = false;

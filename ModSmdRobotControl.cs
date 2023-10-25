@@ -88,8 +88,8 @@ namespace chip_counter
         private int m_doInspectionDone;
 
         private int m_doPickupOrReady;
-        
-        
+        bool m_placeWasStarted = false;
+
         private string m_barcode;
         private bool m_barcodeIsNG;
 
@@ -274,7 +274,13 @@ namespace chip_counter
         private bool IsValidIO(int di)
         {
             // Implement the IsValidIO logic
-            return true;
+#if DEBUG 
+            return di >= 0;
+#else
+            if (gpio.OPEN && di >= 0) { return true; }
+
+            return false;
+#endif
         }
 
         //private bool m_bGoHomeStarted =false;
@@ -289,26 +295,24 @@ namespace chip_counter
         //private const int GOHOME_DOES_NOT_FINISHED = 0;
 
         ////////////////////////////////////////////////////////////////////////////////
-        #region Low Level{
+#region Low Level{
         public void SetTvReady(bool val, bool forced)
         {
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
 
-            if (gpio.Init(info.config))
+            if (IsValidIO(m_doReady))
             {
-                bool prevState = gpio.IO_IN.Get(m_doReady);
+                bool prevState = gpio.IO_OUT.Get(m_doReady);
                 if (forced || prevState != val)
                 {
                     // Instead of changing GPIO state, raise an event
                     //TvReadyEvent?.Invoke(!prevState, false);
+                    UserMessage(who + "--> TV READY " + val, EVS_DEBUG);
                     gpio.SetOut(m_doReady, val);
                 }
             }
-            else
-            {
-                UserMessage(who + "OUT_TV_READY is not specified in McDataAlphaAap.xml", EVS_WARN);
-            }
+
         }
         
         public void SetTvInspectionDone(bool val)
@@ -316,27 +320,20 @@ namespace chip_counter
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
 
-            if (gpio.Init(info.config))
+            if (IsValidIO(m_doInspectionDone))
             {
-                bool prevState = gpio.IO_IN.Get(m_doInspectionDone);
+                bool prevState = gpio.IO_OUT.Get(m_doInspectionDone);
                 if (prevState != val)
                 {
                     // Instead of changing GPIO state, raise the event
                     //TvInspectionDoneEvent?.Invoke(true);
+                    UserMessage(who + "--> TV INSPECTION DONE " + val, EVS_DEBUG);
                     gpio.SetOut(m_doInspectionDone, val);
                     ResetBarcode();
                 }
-                else
-                {
-                    // Log the warning
-                    UserMessage(who + "OUT_TV_INSPECTION_DONE is not specified in McDataAlphaAap.xml", EVS_WARN);
-                }
+
             }
-            else
-            {
-                // Log the error
-                UserMessage(who + "--> TV INSPECTION DONE - Error", EVS_DEBUG);
-            }
+
         }
 
         public void SetTvBarcodeOK(bool val)
@@ -344,7 +341,7 @@ namespace chip_counter
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
 
-            if (gpio.Init(info.config))
+            if (IsValidIO(m_Out_doBarcodeOK))
             {
                 if (m_barcodeIsNG)
                 {
@@ -353,25 +350,17 @@ namespace chip_counter
                 }
                 else
                 {
-                    bool prevState = gpio.IO_IN.Get(m_Out_doBarcodeOK);
+                    bool prevState = gpio.IO_OUT.Get(m_Out_doBarcodeOK);
                     if (prevState != val)
                     {
                         // Raise the event based on the previous state
                         //TvBarcodeOKEvent?.Invoke(true);
+                        UserMessage(who + "--> TV BARCODE OK " + val, EVS_DEBUG);
                         gpio.SetOut(m_Out_doBarcodeOK, val);
-                    }
-                    else
-                    {
-                        // Log the warning
-                        UserMessage(who + "--> TV BARCODE OK - Error", EVS_DEBUG);
                     }
                 }
             }
-            else
-            {
-                // Log the error
-                UserMessage(who + "OUT_TV_BARCODE_OK is not specified in McDataAlphaAap.xml", EVS_WARN);
-            }
+
         }
 
         public void SetTvBarcodeNG(bool val)
@@ -379,7 +368,7 @@ namespace chip_counter
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
 
-            if (gpio.Init(info.config))
+            if (IsValidIO(m_doBarcodeNG))
             {
                 if (val)
                 {
@@ -387,19 +376,16 @@ namespace chip_counter
                     UserMessage(who + "Set BARCODE NG " + val, EVS_DEBUG);
                 }
 
-                bool prevState = gpio.IO_IN.Get(m_doBarcodeNG);
+                bool prevState = gpio.IO_OUT.Get(m_doBarcodeNG);
                 if (prevState != val)
                 {
                     // Raise the event based on the previous state
                     //TvBarcodeNGEvent?.Invoke(val);
+                    UserMessage(who + "--> TV BARCODE NG " + val, EVS_DEBUG);
                     gpio.SetOut(m_doBarcodeNG, val);
                 }
             }
-            else
-            {
-                // Log the error
-                UserMessage(who + "OUT_TV_BARCODE_NG is not specified in McDataAlphaAap.xml", EVS_WARN);
-            }
+
         }
 
         public void SetTvReelIsNotRegistered(bool val, bool forced)
@@ -407,28 +393,20 @@ namespace chip_counter
             // Place any initialization or hardware-specific code here
             // Ensure you have 'info' and 'config' available
 
-            if (gpio.Init(info.config))
+            if (IsValidIO(m_doReelIsNotRegistred))
             {
-                bool prevState = gpio.IO_IN.Get(m_doReelIsNotRegistred);
+                bool prevState = gpio.IO_OUT.Get(m_doReelIsNotRegistred);
                 if (prevState != val || forced)
                 {
                     // Raise the event based on the previous state
                     //TvReelIsNotRegisteredEvent?.Invoke(val);
+                    UserMessage(who + "--> TV REEL IS NOT REGISTERED " + val, EVS_DEBUG);
                     gpio.SetOut(m_doReelIsNotRegistred, val);
                 }
             }
-            else
-            {
-                // Log the error
-                UserMessage(who + "OUT_TV_REEL_IS_NOT_REGISTERED is not specified in McDataAlphaAap.xml", EVS_WARN);
-
-                // Additional actions (set other IO states)
-                SetTvBarcodeOK(!val);
-                SetTvBarcodeNG(val);
-            }
         }
 
-        #region Barcode handling {
+#region Barcode handling {
         string Barcode() { return m_barcode; }
 
         public void SetBarcode(string bc)
@@ -449,11 +427,11 @@ namespace chip_counter
         }
         bool IsBarcodeNG() { return m_barcodeIsNG; }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region High level{
+#region High level{
 
         public void SmdRobotInit()
         {
@@ -552,7 +530,7 @@ namespace chip_counter
                     SetTvInspectionDone(true);
 
                     // Raise an event to indicate TV inspection is done
-                    SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
+                    //SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
                 }
                 else if (!afterInspection)
                 {
@@ -563,7 +541,7 @@ namespace chip_counter
                     SetTvReady(true, m_forcibly);
 
                     // Raise an event to indicate TV is ready
-                    SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
+                    //SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
                 }
             }
         }
@@ -587,7 +565,7 @@ namespace chip_counter
                     SetTvBarcodeOK(true);
 
                     // Raise an event to indicate that TV BARCODE OK is set
-                    SmdBarcodeOKEvent?.Invoke(bc);
+                    //SmdBarcodeOKEvent?.Invoke(bc);
                 }
             }
         }
@@ -601,7 +579,7 @@ namespace chip_counter
                 SetTvBarcodeNG(true);
 
                 // Raise an event to indicate that TV BARCODE NG is set
-                SmdBarcodeNGEvent?.Invoke();
+                //SmdBarcodeNGEvent?.Invoke();
             }
         }
 
@@ -615,7 +593,7 @@ namespace chip_counter
                 SetTvReady(false, m_forcibly);
 
                 // Raise an event to indicate that TV Reel is not registered
-                SmdSetTvReelIsNotRegisteredEvent?.Invoke();
+                //SmdSetTvReelIsNotRegisteredEvent?.Invoke();
             }
         }
 
@@ -640,7 +618,7 @@ namespace chip_counter
                 }
 
                 // Raise the SmdBarcodeReadyEvent with the param value
-                SmdBarcodeReadyEvent?.Invoke(param);
+                //SmdBarcodeReadyEvent?.Invoke(param);
             }
         }
         void SmdPlaceReady(bool param)
@@ -650,11 +628,9 @@ namespace chip_counter
 
             UserMessage(who + "<-- SMD PLACE READY " + param, EVS_DEBUG);
 
-            bool placeWasStarted = false;
-
             if (param)
             {
-                placeWasStarted = true;
+                m_placeWasStarted = true;
 
                 SetTvReady(false, m_forcibly);
 
@@ -664,25 +640,25 @@ namespace chip_counter
                 //SmdRobotControl::get().SetTvBarcodeOK(false, forcibly);
                 //SmdRobotControl::get().SetTvBarcodeNG(false, forcibly);
             }
-            else if (placeWasStarted)
+            else if (m_placeWasStarted)
             {
-                placeWasStarted = false;
+                m_placeWasStarted = false;
 
-                string barcode = "Barcode1"; //SmdRobotControl::get().Barcode(); //need to include from chipcounter form or imageviewer
+                string barcode = Barcode(); //need to include from chipcounter form or imageviewer
                 if (m_bReelIsNotRegistered)
                 {
-                    UserMessage(who + "Skip UM_START_SCANNING. Reel is not registered.", EVS_WARN);
+                    UserMessage(who + "Skip START_SCANNING. Reel is not registered.", EVS_WARN);
                     SmdSetTvReelIsNotRegistered();
                 }
                 else if (!string.IsNullOrEmpty(barcode))
                 {
-                    UserMessage(who + "Send UM_START_SCANNING " + barcode, EVS_DEBUG);
-                    //Autostart needed here
+                    UserMessage(who + "Send START_SCANNING " + barcode, EVS_DEBUG);
+                    // TODO Autostart needed here
                     //Autostart();
                 }
                 else
                 {
-                    UserMessage(who + "Skip UM_START_SCANNING. Barcode is empty", EVS_WARN);
+                    UserMessage(who + "Skip START_SCANNING. Barcode is empty", EVS_WARN);
                     SmdBarcodeNG();
                 }
             }
@@ -729,24 +705,31 @@ namespace chip_counter
                 // Remove barcode from barcode list in case of received SMD RESET signal
                 m_barcode = "";
 
-                UserMessage($"{who} Send UM_PARKING_STAGE UNLOAD_STAGE", EVS_DEBUG);
 
-                if (gpio.GetIn(GPIO_DEF.IN_STATGE_IN_SENSOR))
-                {
-                    gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
-                }
-                else if(!gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
-                {
-                    gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
-                }
 
-                while (true)
+                GoHome();
+            }
+        }
+
+        private void GoHome()
+        {
+            UserMessage($"{who} UNLOAD_STAGE", EVS_DEBUG);
+            
+            if (gpio.GetIn(GPIO_DEF.IN_STATGE_IN_SENSOR))
+            {
+                gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
+            }
+            else if (!gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
+            {
+                gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
+            }
+
+            while (true)
+            {
+                if (gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
                 {
-                    if (gpio.GetIn(GPIO_DEF.IN_STATGE_OUT_SENSOR))
-                    {
-                        gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, false);
-                        break;
-                    }
+                    gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, false);
+                    break;
                 }
             }
         }
@@ -834,7 +817,7 @@ namespace chip_counter
             previousIOState = currentIOState;
         }
 
-        #region Setup I/O signals numbers {
+#region Setup I/O signals numbers {
 
         public void SetupTvReadyDO(int outBit)
         {
@@ -887,7 +870,7 @@ namespace chip_counter
             m_In_PickReady = inBit; //15
         }
 
-        #endregion
+#endregion
 
         private void Form_Load(object sender, EventArgs e)
         {
