@@ -1,4 +1,5 @@
 ﻿//using chip_counter.mcu_Board;
+using chip_counter.mcu_Board;
 using chip_counter.tmc;
 using System;
 using System.Collections;
@@ -58,14 +59,14 @@ namespace chip_counter
         private static GPIOProc _instance = null;
 
         private GPIO_device _gpio_device = null;
-        //private TcpMCUBoardDevice _mcu_device = null;
+        private TcpMCUBoardDevice _mcu_device = null;
         private string LastError = "";
         private int _gpio_mode = 0;
 
         private Logger _log = null;
 
-        //public delegate void GPIOProcLogEventFunc(string msg);
-        //public event GPIOProcLogEventFunc GPIOProcLog;
+        public delegate void GPIOProcLogEventFunc(string msg);
+        public event GPIOProcLogEventFunc GPIOProcLog;
 
         public bool SET_OUT_IO_READ = true;
         public bool OPEN
@@ -75,8 +76,8 @@ namespace chip_counter
                 bool res = false;
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = (_gpio_device == null ? false : _gpio_device.OPEN);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = (_mcu_device == null ? false : _mcu_device.OPEN);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = (_mcu_device == null ? false : _mcu_device.OPEN);
 
                 return res;
             }
@@ -88,8 +89,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     return (_gpio_device == null ? null : _gpio_device.IO_IN);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    return (_mcu_device == null ? null : _mcu_device.IO_IN);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    return (_mcu_device == null ? null : _mcu_device.IO_IN);
 
                 return null;
             }
@@ -101,8 +102,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     return (_gpio_device == null ? null : _gpio_device.IO_OUT);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    return (_mcu_device == null ? null : _mcu_device.IO_OUT);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    return (_mcu_device == null ? null : _mcu_device.IO_OUT);
 
                 return null;
             }
@@ -175,10 +176,8 @@ namespace chip_counter
         {
             _gpio_mode = config.GPIO_MODE;
 
-#if DEBUG
             Log.Info("Gpio Mode : " + "In Debug Mode 0 ");
             _gpio_device = GPIO_device.Instance;
-#else
 
             Log.Info("Gpio Mode : " + _gpio_mode.ToString());
             if (_gpio_mode == TMC_GPIO_MODE)
@@ -191,19 +190,18 @@ namespace chip_counter
                 }
                 Log.Info("[GPIO] Device Init Complete!");
             }
-#endif
-            //else if (_gpio_mode == MCU_GPIO_MODE)
-            //{
-            //    _mcu_device = TcpMCUBoardDevice.Instance;
-            //    //_mcu_device.WriteMessageEvent += WriteLog.Info;
-            //    if (_mcu_device.Init() == false)
-            //    {
-            //        Log.Info("[MCU] Device Init Failed!");
-            //        return false;
-            //    }
-            //    //_mcu_device.WriteMessageEvent += WriteLog.Info;
-            //    Log.Info("[MCU] Device Init Complete!");
-            //}
+            else if (_gpio_mode == MCU_GPIO_MODE)
+            {
+                _mcu_device = TcpMCUBoardDevice.Instance;
+                //_mcu_device.WriteMessageEvent += WriteLog.Info;
+                if (_mcu_device.Init() == false)
+                {
+                    Log.Info("[MCU] Device Init Failed!");
+                    return false;
+                }
+                //_mcu_device.WriteMessageEvent += WriteLog.Info;
+                Log.Info("[MCU] Device Init Complete!");
+            }
             return true;
         }
 
@@ -217,15 +215,15 @@ namespace chip_counter
                     _gpio_device = null;
                 }
             }
-            //else if (_gpio_mode == MCU_GPIO_MODE)
-            //{
-            //    if (_mcu_device != null)
-            //    {
-            //        //_mcu_device.WriteMessageEvent -= WriteLog.Info;
-            //        _mcu_device.DeInit();
-            //        _mcu_device = null;
-            //    }
-            //}
+            else if (_gpio_mode == MCU_GPIO_MODE)
+            {
+                if (_mcu_device != null)
+                {
+                    //_mcu_device.WriteMessageEvent -= WriteLog.Info;
+                    _mcu_device.DeInit();
+                    _mcu_device = null;
+                }
+            }
             _instance = null;
         }
         public bool IsPowerOff()
@@ -235,8 +233,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = _gpio_device.IsPowerOff();
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = _mcu_device.IsPowerOff();
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = _mcu_device.IsPowerOff();
 
             }
             catch { return false; }
@@ -268,8 +266,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     _gpio_device.SetOutClear();
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    _mcu_device.SetOutClear();
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    _mcu_device.SetOutClear();
             }
             catch { }
         }
@@ -281,8 +279,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     _gpio_device.SetOutToggle(index, on_off);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    _mcu_device.SetOutToggle(index, on_off);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    _mcu_device.SetOutToggle(index, on_off);
             }
             catch (Exception ex)
             {
@@ -326,11 +324,11 @@ namespace chip_counter
                     _gpio_device.SetOut(indexs, on_off);
                     Log.Info($"SetOut for MCU index: {indexs} on_off : {on_off}");
                 }
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //{
-                //    Log.Info($"SetOut for MCU index: {indexs} on_off : {on_off}");
-                //    _mcu_device.SetOut(indexs, on_off);
-                //}
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                {
+                    Log.Info($"SetOut for MCU index: {indexs} on_off : {on_off}");
+                    _mcu_device.SetOut(indexs, on_off);
+                }
             }
             catch (Exception ex)
             {
@@ -348,9 +346,9 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     _gpio_device.SetOut(index, on_off);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    //Log.Info($"SetOut for MCU index: {index} on_off : {on_off}");
-                //    _mcu_device.SetOut(index, on_off);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    //Log.Info($"SetOut for MCU index: {index} on_off : {on_off}");
+                    _mcu_device.SetOut(index, on_off);
             }
             catch (Exception ex)
             {
@@ -368,8 +366,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = _gpio_device.GetIn();
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = _mcu_device.GetIn();
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = _mcu_device.GetIn();
             }
             catch (Exception ex)
             {
@@ -390,8 +388,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = _gpio_device.GetIn(index);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = _mcu_device.GetIn(index);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = _mcu_device.GetIn(index);
             }
             catch (Exception ex)
             {
@@ -412,8 +410,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = _gpio_device.GetOut(index);
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = _mcu_device.GetOut(index);
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = _mcu_device.GetOut(index);
             }
             catch (Exception ex)
             {
@@ -435,8 +433,8 @@ namespace chip_counter
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
                     res = _gpio_device.GetOut();
-                //else if (_gpio_mode == MCU_GPIO_MODE)
-                //    res = _mcu_device.GetOut();
+                else if (_gpio_mode == MCU_GPIO_MODE)
+                    res = _mcu_device.GetOut();
             }
             catch (Exception ex)
             {

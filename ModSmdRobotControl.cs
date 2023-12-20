@@ -1,15 +1,6 @@
-﻿using chip_counter;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Timers;
-using System.Runtime.InteropServices;
 
 namespace chip_counter
 {
@@ -19,67 +10,22 @@ namespace chip_counter
         {
             InitializeComponent();
 
-            // Initialize the m_DISettings dictionary in the constructor
-            //      m_DISettings = new Dictionary<int, string>();
-            //{
-            //{ m_In_BarcodeReady, "AAP: IN_SMD_BARCODE_READY" },
-            //{ m_In_PlaceReady, "AAP: IN_SMD_PLACE_READY" },
-            //{ m_In_PickReady, "AAP: IN_SMD_PICKUP_READY" },
-            //{ m_In_Reset, "AAP: IN_SMD_RESET" }
-            //};
+            Set_In_Reset(12);                           //should be read from config
+            Set_In_BarcodeReady(13);                    //should be read from config
+            Set_In_PlaceReady(14);                      //should be read from config
+            Set_In_Pickup_Ready(15);                    //should be read from config
 
-            Set_In_Reset(12);
-            Set_In_BarcodeReady(13);
-            Set_In_PlaceReady(14);
-            Set_In_Pickup_Ready(15);
-
-            SetupTvReadyDO(12);
-            SetupTvInspectionDoneDO(1);
-            SetupTvBarcodeOkDO(14);
-            SetupTvBarcodeNgDO(15);
-            SetupTvReelIsNotRegisteredDO(13);
-
-
-
-
-            // Initialize the dictionary with your events
-            //ioEventMap.Add(m_In_BarcodeReady, (param1, param2, param3) => SmdBarcodeReady(param1));
-            //ioEventMap.Add(m_In_PlaceReady, (param1, param2, param3) => SmdPlaceReady(param1));
-            //ioEventMap.Add(m_In_PickReady, (param1, param2, param3) => SmdPickupReady(param1));
-            //ioEventMap.Add(m_In_Reset, (param1, param2, param3) => SmdReset(param1));
-
-            //ioEventMap.Add(m_doReady, (param1, param2, param3) => SmdSendTvReady(param1));
-
-            //ioEventMap.Add(m_Out_doBarcodeOK, (param1, param2, param3) => SetTvBarcodeOK());
-            //ioEventMap.Add(m_doBarcodeNG, (param1, param2, param3) => SetTvBarcodeNG(param1));
-            //ioEventMap.Add(m_doReelIsNotRegistred, (param1, param2, param3) => SetTvReelIsNotRegistered(param1,param2));
-            //ioEventMap.Add(m_doInspectionDone, (param1, param2, param3) => SmdSendInspectionDone(param1,param2));
-
-            //ioEventMap.Add(m_doPickupOrReady, (param1, param2, param3) => SmdSendPickupOrReady(param1,param2,param3));
-            //// Add other events with the appropriate number of parameters
-            /*
-
-            SmdSendPickupOrReadyEvent += (param1, param2, param3) => SmdSendPickupOrReady(param1, param2, param3);
-
-             */
+            SetupTvReadyDO(12);                         //should be read from config
+            SetupTvInspectionDoneDO(1);                 //should be read from config
+            SetupTvBarcodeOkDO(14);                     //should be read from config
+            SetupTvBarcodeNgDO(15);                     //should be read from config
+            SetupTvReelIsNotRegisteredDO(13);           //should be read from config
         }
-        private Dictionary<int, Action<bool, bool, bool>> ioEventMap = new Dictionary<int, Action<bool, bool, bool>>();
+        /// <summary>
+        /// init required variables
+        /// </summary>
+        public bool m_forcibly = false;
 
-        // Import the user32.dll library and declare the SendMessage function
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-
-        // Define the message constants you want to use
-        private const int WM_USER = 0x0400; // Custom message base
-        private const int UM_CUSTOM_MESSAGE = WM_USER + 1; // Custom message ID
-
-        public void SendCustomMessage(IntPtr hWnd, int wParam, int lParam)
-        {
-            // Use SendMessage to send a custom message to the specified window
-            SendMessage(hWnd, UM_CUSTOM_MESSAGE, new IntPtr(wParam), new IntPtr(lParam));
-        }
-        public bool m_forcibly=false;
-       
         private int m_doReady;
 
         private int m_Out_doBarcodeOK;
@@ -93,13 +39,13 @@ namespace chip_counter
         private string m_barcode;
         private bool m_barcodeIsNG;
 
-        public bool registered = false; //need to include from chipcounter form
+        public bool registered = false; //TODO//need to include from chipcounter form
         public bool m_bReelIsNotRegistered = true; //need to include from chipcounter form
 
-        private int m_In_Reset = 12;
-        private int m_In_BarcodeReady = 13;
-        private int m_In_PlaceReady = 14;
-        private int m_In_PickReady = 15;
+        private int m_In_Reset = 12;                 //should be read from config
+        private int m_In_BarcodeReady = 13;          //should be read from config
+        private int m_In_PlaceReady = 14;            //should be read from config
+        private int m_In_PickReady = 15;             //should be read from config
 
         private string who = "SMDrobot: ";
 
@@ -116,7 +62,6 @@ namespace chip_counter
             }
         }
 
-
         private static ModSmdRobotControl _instance = null;
         //private Timer m_timer = new Timer();
         private System.Timers.Timer m_timer;
@@ -130,23 +75,6 @@ namespace chip_counter
         private const int SMD_RESET = 4;
 
 
-        //Low level
-        public event Action<bool, bool> TvReadyEvent;
-        public event Action<bool> TvInspectionDoneEvent;
-        public event Action<bool> TvBarcodeOKEvent;
-        public event Action<bool> TvBarcodeNGEvent;
-        public event Action<bool> TvReelIsNotRegisteredEvent;
-
-        //High level
-
-        //public event Action SmdRobotInitEvent; Doesn't need
-
-        //public event Action<bool, bool> SmdSendInspectionDoneEvent;
-        //public event Action<bool> SmdSendTvReadyEvent;
-        public event Action<bool, bool, bool> SmdSendPickupOrReadyEvent;
-        public event Action<string> SmdBarcodeOKEvent;
-        public event Action SmdBarcodeNGEvent;
-        public event Action SmdSetTvReelIsNotRegisteredEvent;
         public event Action<bool> SmdBarcodeReadyEvent;
         public event Action<bool> SmdPickupReadyEvent;
         public event Action<bool> SmdPlaceReadyEvent;
@@ -155,7 +83,7 @@ namespace chip_counter
 
         private bool IsEnable()
         {
-            return true; // info.config.ROBOT.SMD_ENABLE;
+            return true; // TODO info.config.ROBOT.SMD_ENABLE;
         }
 
         #region Logger{
@@ -194,23 +122,6 @@ namespace chip_counter
 
         public void SubscribeToAllEvents()
         {
-            // Low level events
-            TvReadyEvent += (param1, param2) => SetTvReady(param1, param2);
-            TvInspectionDoneEvent += param => SetTvInspectionDone(param);
-            TvBarcodeOKEvent += param => SetTvBarcodeOK(param);
-            TvBarcodeNGEvent += param => SetTvBarcodeNG(param);
-            TvReelIsNotRegisteredEvent += param => SetTvReelIsNotRegistered(param, true);
-
-            // High level events
-            //SmdRobotInitEvent += () => SmdRobotInit();
-
-            // SmdSendInspectionDoneEvent += (param1, param2) => SmdSendInspectionDone(param1, param2);
-            // SmdSendTvReadyEvent += param => SmdSendTvReady(param);
-            SmdSendPickupOrReadyEvent += (param1, param2, param3) => SmdSendPickupOrReady(param1, param2, param3);
-
-            SmdBarcodeOKEvent += param => SmdBarcodeOK(param);
-            SmdBarcodeNGEvent += () => SmdBarcodeNG();
-            SmdSetTvReelIsNotRegisteredEvent += () => SmdSetTvReelIsNotRegistered();
 
             SmdBarcodeReadyEvent += param => SmdBarcodeReady(param);
 
@@ -220,56 +131,6 @@ namespace chip_counter
             SmdResetEvent += param => SmdReset(param);
 
         }
-        
-
-        //private Dictionary<int, string> m_DISettings;
-
-        //public void HandleDIPlusSettings(
-        //int ioOld,
-        //int ioNew,
-        //Action<int, int> messageTarget,
-        //int umCode,
-        //Dictionary<int, string> m_DISettings,
-        //string errorString)
-        //{
-        //    foreach (var kvp in m_DISettings)
-        //    {
-        //        int setting = kvp.Key;
-        //        string description = kvp.Value;
-        //        HandleDIPlus(ioOld, ioNew, setting, messageTarget, umCode, description, errorString);
-        //    }
-        //}
-        //public void HandleDIPlus(int ioOld, int ioNew, int di, Action<int, int> messageTarget, int umCode, string logStr, string ErrorStr)
-        //{
-        //    if (!IsValidIO(di) || m_bGoHomeStarted)
-        //        return;
-
-        //    bool newValue = (ioNew & (1 << di)) != 0;
-        //    bool oldValue = (ioOld & (1 << di)) != 0;
-
-        //    if (newValue != oldValue)
-        //    {
-        //        UserMessage(logStr + " DI" + di + "=" + newValue, EVS_DEBUG);
-
-        //        if (newValue && m_nGoHomeState == GOHOME_DOES_NOT_FINISHED)
-        //        {
-        //            GoHome(out ErrorStr);
-        //        }
-        //        else
-        //        {
-        //            if (ioEventMap.ContainsKey(di))
-        //            {
-        //                ioEventMap[di].Invoke(newValue, oldValue, m_forcibly);
-        //            }
-
-        //            if (messageTarget != null)
-        //            {
-        //                messageTarget.Invoke(umCode, di);
-        //            }
-        //        }
-        //    }
-        //}
-        
 
         private bool IsValidIO(int di)
         {
@@ -283,19 +144,8 @@ namespace chip_counter
 #endif
         }
 
-        //private bool m_bGoHomeStarted =false;
-        //private int m_nGoHomeState = 0;
-
-        //public void GoHome(out string ErrorStr)
-        //{
-        //    // Implement the GoHome logic
-        //    ErrorStr = string.Empty;
-        //}
-
-        //private const int GOHOME_DOES_NOT_FINISHED = 0;
-
         ////////////////////////////////////////////////////////////////////////////////
-#region Low Level{
+        #region Low Level{
         public void SetTvReady(bool val, bool forced)
         {
             // Place any initialization or hardware-specific code here
@@ -306,7 +156,7 @@ namespace chip_counter
                 bool prevState = gpio.IO_OUT.Get(m_doReady);
                 if (forced || prevState != val)
                 {
-                    // Instead of changing GPIO state, raise an event
+                    // TODO Instead of changing GPIO state, raise an event
                     //TvReadyEvent?.Invoke(!prevState, false);
                     UserMessage(who + "--> TV READY " + val, EVS_DEBUG);
                     gpio.SetOut(m_doReady, val);
@@ -314,7 +164,7 @@ namespace chip_counter
             }
 
         }
-        
+
         public void SetTvInspectionDone(bool val)
         {
             // Place any initialization or hardware-specific code here
@@ -325,7 +175,7 @@ namespace chip_counter
                 bool prevState = gpio.IO_OUT.Get(m_doInspectionDone);
                 if (prevState != val)
                 {
-                    // Instead of changing GPIO state, raise the event
+                    // TODO Instead of changing GPIO state, raise the event
                     //TvInspectionDoneEvent?.Invoke(true);
                     UserMessage(who + "--> TV INSPECTION DONE " + val, EVS_DEBUG);
                     gpio.SetOut(m_doInspectionDone, val);
@@ -353,7 +203,7 @@ namespace chip_counter
                     bool prevState = gpio.IO_OUT.Get(m_Out_doBarcodeOK);
                     if (prevState != val)
                     {
-                        // Raise the event based on the previous state
+                        // TODO Raise the event based on the previous state
                         //TvBarcodeOKEvent?.Invoke(true);
                         UserMessage(who + "--> TV BARCODE OK " + val, EVS_DEBUG);
                         gpio.SetOut(m_Out_doBarcodeOK, val);
@@ -379,7 +229,7 @@ namespace chip_counter
                 bool prevState = gpio.IO_OUT.Get(m_doBarcodeNG);
                 if (prevState != val)
                 {
-                    // Raise the event based on the previous state
+                    // TODO Raise the event based on the previous state
                     //TvBarcodeNGEvent?.Invoke(val);
                     UserMessage(who + "--> TV BARCODE NG " + val, EVS_DEBUG);
                     gpio.SetOut(m_doBarcodeNG, val);
@@ -398,7 +248,7 @@ namespace chip_counter
                 bool prevState = gpio.IO_OUT.Get(m_doReelIsNotRegistred);
                 if (prevState != val || forced)
                 {
-                    // Raise the event based on the previous state
+                    // TODO Raise the event based on the previous state
                     //TvReelIsNotRegisteredEvent?.Invoke(val);
                     UserMessage(who + "--> TV REEL IS NOT REGISTERED " + val, EVS_DEBUG);
                     gpio.SetOut(m_doReelIsNotRegistred, val);
@@ -406,7 +256,7 @@ namespace chip_counter
             }
         }
 
-#region Barcode handling {
+        #region Barcode handling {
         string Barcode() { return m_barcode; }
 
         public void SetBarcode(string bc)
@@ -427,11 +277,11 @@ namespace chip_counter
         }
         bool IsBarcodeNG() { return m_barcodeIsNG; }
 
-#endregion
+        #endregion
 
-#endregion
+        #endregion
 
-#region High level{
+        #region High level{
 
         public void SmdRobotInit()
         {
@@ -451,7 +301,7 @@ namespace chip_counter
 
                 // Additional initialization code specific to your hardware
 
-                // Raise an event to indicate initialization
+                // TODO Raise an event to indicate initialization
                 // SmdRobotInitEvent?.Invoke();
             }
         }
@@ -465,10 +315,10 @@ namespace chip_counter
                                 + ", Stage is unloaded: " + stageIsUnloaded,
                     isOK ? EVS_DEBUG : EVS_WARN);
 
-                // Check if stage is unloaded
+                // TODO Check if stage is unloaded
                 if (inspectionIsFinished && stageIsUnloaded)
                 {
-                    const bool forcibly = false;
+                    //const bool forcibly = false;
                     SetTvInspectionDone(true);
                 }
                 else if (!inspectionIsFinished)
@@ -480,7 +330,7 @@ namespace chip_counter
                     UserMessage(who + "Stage is not unloaded", EVS_WARN);
                 }
 
-                // Raise an event to indicate inspection status
+                // TODO Raise an event to indicate inspection status
                 //SmdSendInspectionDoneEvent?.Invoke(inspectionIsFinished, stageIsUnloaded);
             }
         }
@@ -504,12 +354,8 @@ namespace chip_counter
                     SetTvReady(true, m_forcibly);
                 }
 
-                // Raise an event to indicate TV readiness
+                // TODO Raise an event to indicate TV readiness
                 //SmdSendTvReadyEvent?.Invoke(ready);
-
-                // If you want to include a delay with a message, you can do so here
-                //if (theApp.IsCurrentUserAdmin())
-                //    DelayWithMsg(1500, true, "LOGIN as user to operate with robot");
             }
         }
 
@@ -526,7 +372,7 @@ namespace chip_counter
 
                 if (afterInspection && inspectionIsFinished)
                 {
-                    const bool forcibly = false;
+                    //const bool forcibly = false;
                     SetTvInspectionDone(true);
 
                     // Raise an event to indicate TV inspection is done
@@ -540,7 +386,7 @@ namespace chip_counter
                     SetTvBarcodeOK(false);
                     SetTvReady(true, m_forcibly);
 
-                    // Raise an event to indicate TV is ready
+                    // TODO Raise an event to indicate TV is ready
                     //SmdSendPickupOrReadyEvent?.Invoke(afterInspection, unloadResult, inspectionIsFinished);
                 }
             }
@@ -559,12 +405,12 @@ namespace chip_counter
                     SetTvReady(false, m_forcibly);
                     SetBarcode(bc);
 
-                    const bool forcibly = false;
+                    //const bool forcibly = false;
 
                     SetTvBarcodeNG(false);
                     SetTvBarcodeOK(true);
 
-                    // Raise an event to indicate that TV BARCODE OK is set
+                    // TODO Raise an event to indicate that TV BARCODE OK is set
                     //SmdBarcodeOKEvent?.Invoke(bc);
                 }
             }
@@ -574,11 +420,11 @@ namespace chip_counter
         {
             if (IsEnable())
             {
-                const bool forcibly = false;
+                //const bool forcibly = false;
                 SetTvBarcodeOK(false);
                 SetTvBarcodeNG(true);
 
-                // Raise an event to indicate that TV BARCODE NG is set
+                // TODO Raise an event to indicate that TV BARCODE NG is set
                 //SmdBarcodeNGEvent?.Invoke();
             }
         }
@@ -592,7 +438,7 @@ namespace chip_counter
                 SetTvReelIsNotRegistered(!registered, m_forcibly);
                 SetTvReady(false, m_forcibly);
 
-                // Raise an event to indicate that TV Reel is not registered
+                // TODO Raise an event to indicate that TV Reel is not registered
                 //SmdSetTvReelIsNotRegisteredEvent?.Invoke();
             }
         }
@@ -617,7 +463,7 @@ namespace chip_counter
                     SmdBarcodeNG();
                 }
 
-                // Raise the SmdBarcodeReadyEvent with the param value
+                // TODO Raise the SmdBarcodeReadyEvent with the param value
                 //SmdBarcodeReadyEvent?.Invoke(param);
             }
         }
@@ -635,16 +481,12 @@ namespace chip_counter
                 SetTvReady(false, m_forcibly);
 
                 // NOTE: Do not reset BARCODE OK and BARCODE NG signals
-                //const bool forcibly =
-                //    g_StartupData.m_ccParams.Get<bool>(CChipCounterTaskParams::kSmdForcedSetIO, false);
-                //SmdRobotControl::get().SetTvBarcodeOK(false, forcibly);
-                //SmdRobotControl::get().SetTvBarcodeNG(false, forcibly);
             }
             else if (m_placeWasStarted)
             {
                 m_placeWasStarted = false;
 
-                string barcode = Barcode(); //need to include from chipcounter form or imageviewer
+                string barcode = Barcode(); //TODO need to include from chipcounter form or imageviewer
                 if (m_bReelIsNotRegistered)
                 {
                     UserMessage(who + "Skip START_SCANNING. Reel is not registered.", EVS_WARN);
@@ -691,7 +533,7 @@ namespace chip_counter
         {
             UserMessage($"{who} <-- SMD RESET {param}", EVS_DEBUG);
 
-            bool smdRobotEnable = false; // Replace this with your logic to get the enable status.
+            bool smdRobotEnable = false; // TODO Replace this with your logic to get the enable status.
 
             if (!smdRobotEnable)
                 return;
@@ -705,8 +547,7 @@ namespace chip_counter
                 // Remove barcode from barcode list in case of received SMD RESET signal
                 m_barcode = "";
 
-
-
+                //if nessesary
                 GoHome();
             }
         }
@@ -714,7 +555,7 @@ namespace chip_counter
         private void GoHome()
         {
             UserMessage($"{who} UNLOAD_STAGE", EVS_DEBUG);
-            
+
             if (gpio.GetIn(GPIO_DEF.IN_STATGE_IN_SENSOR))
             {
                 gpio.SetOut(GPIO_DEF.OUT_STAGE_OUT, true);
@@ -733,10 +574,8 @@ namespace chip_counter
                 }
             }
         }
-
-        // You will need to define or replace UM_CLEAR_LAST_BARCODE, UM_PARKING_STAGE, and UNLOAD_STAGE with the appropriate values or constants.
-
         #endregion
+
         private Dictionary<int, string> smdParamId = new Dictionary<int, string>
         {
         { 0, "SMD_SPARE(0)" },
@@ -752,11 +591,11 @@ namespace chip_counter
             if (smdParamId.ContainsKey(wp))
             {
                 string paramStr = smdParamId[wp];
-                UserMessage($"{who}UmSmdRobotControl: {paramStr}, wp: {wp}, lp: {lp}", EVS_DEBUG);
+                UserMessage($"{who} SmdRobotControl: {paramStr}, wp: {wp}, lp: {lp}", EVS_DEBUG);
             }
             else
             {
-                UserMessage($"{who}UmSmdRobotControl: SMD_UNKNOWN_{wp}, wp: {wp}, lp: {lp}", EVS_DEBUG);
+                UserMessage($"{who} SmdRobotControl: SMD_UNKNOWN_{wp}, wp: {wp}, lp: {lp}", EVS_DEBUG);
             }
             switch (wp)
             {
@@ -778,7 +617,6 @@ namespace chip_counter
 
             }
         }
-
 
         private bool[] previousIOState = new bool[16]; // Array to store the previous IO state
 
@@ -817,7 +655,7 @@ namespace chip_counter
             previousIOState = currentIOState;
         }
 
-#region Setup I/O signals numbers {
+        #region Setup I/O signals numbers {
 
         public void SetupTvReadyDO(int outBit)
         {
@@ -849,7 +687,7 @@ namespace chip_counter
             m_doReelIsNotRegistred = outBit; //13
         }
 
-        public void Set_In_Reset(int inBit) 
+        public void Set_In_Reset(int inBit)
         {
             UserMessage(who + "Set IN_RESET : " + inBit.ToString());
             m_In_Reset = inBit; //12
@@ -870,11 +708,11 @@ namespace chip_counter
             m_In_PickReady = inBit; //15
         }
 
-#endregion
+        #endregion
 
         private void Form_Load(object sender, EventArgs e)
         {
-            SmdRobotInit();
+            SmdRobotInit(); //TODO Include this in starting for Init device or else?
         }
     }
 }

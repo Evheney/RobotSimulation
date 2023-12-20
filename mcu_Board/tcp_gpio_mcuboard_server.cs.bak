@@ -1,0 +1,1902 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace chip_counter.mcu_Board
+{
+    //public sealed class GPIO_DEF
+    //{
+    //    // GPIO in list
+    //    public const int IN_SYSTEM_START = 0;
+    //    public const int IN_DOOR_CLOSE = 1;
+    //    public const int IN_START = 2;
+    //    public const int IN_RETURN = 3;
+    //    public const int IN_STATGE_IN_SENSOR = 4;
+    //    public const int IN_STATGE_OUT_SENSOR = 5;
+    //    public const int IN_DETECTOR_UP_SENSOR = 6;// < = STAGE IN DETECTOR 센서 PCB BOARD사용 으로 변경
+    //    public const int IN_DETECTOR_DOWN_SENSOR = 7;//사용 안함
+    //    public const int IN_FRONT_AREA_SENSOR = 8;
+    //    public const int IN_AIR_SENSOR = 9; // FAN IO 로 변경 예정 (2021.06.21) // 사용안함
+    //    public const int IN_EMERGENCY = 10;
+    //    public const int IN_MOTOR_ERROR = 11;
+    //    public const int IN_REEL_SENSOR1 = 12;
+    //    public const int IN_REEL_SENSOR2 = 13;
+    //    public const int IN_REEL_SENSOR3 = 14;
+    //    public const int IN_REEL_SENSOR4 = 15;
+
+    //    // GPIO out list
+    //    public const int OUT_XRAY_ON = 0;
+    //    public const int OUT_START_LAMP = 2;
+    //    public const int OUT_RETURN_LAMP = 3;
+    //    public const int OUT_STAGE_IN = 4;
+    //    public const int OUT_STAGE_OUT = 5;
+    //    //밑은 사용 안함
+    //    public const int OUT_DETECTOR_UP = 6;
+    //    public const int OUT_DETECTOR_DOWN = 7;
+    //    public const int OUT_TOWER_GREEN = 8;
+    //    public const int OUT_TOWER_YELLOW = 9;
+    //    public const int OUT_TOWER_RED = 10;
+    //    public const int OUT_TOWER_BUZZ = 11;
+    //};
+
+    public sealed class GPIO_STATE
+    {
+        public const int INITIALIZE_COMPLETE = 0;
+        public const int SURVO_INITIALIZE_COMPLETE = 1;
+        public const int ERROR = 2;
+        public const int ERROR_CODE1 = 8;
+        public const int ERROR_CODE2 = 9;
+        public const int ERROR_CODE3 = 10;
+        public const int ERROR_CODE4 = 11;
+        public const int ERROR_CODE5 = 12;
+        public const int ERROR_CODE6 = 13;
+        public const int ERROR_CODE7 = 14;
+        public const int ERROR_CODE8 = 15;
+    }
+
+    class TcpMCUBoardDevice
+    {
+        struct DATAS
+        {
+            public int packet_num;
+            public int length;
+            public int retry_count;
+            public string stx;
+            public string op_code;
+            public string data;
+            public string etx;
+            public string cm_state;
+            public string input_state;
+            public string output_state;
+        }
+
+        private sealed class GPIO_OP_CODE
+        {
+            public const byte PACK_ACK = 0x00; // packet ack success
+            public const byte PACK_NACK = 0x01; // fail
+            public const byte PACK_INIT_SERVER = 0x02; // initialize server status
+            public const byte PACK_INIT_CM = 0x20; // inicitialize client request
+            public const byte PACK_STOC_STATUS = 0x30; // server to client request
+            public const byte PACK_CTOS_STATUS = 0x03; // client to server answer
+            public const byte PACK_STOC_OUPUT = 0x40; // server to client output
+            public const byte PACK_CTOS_OUPUT = 0x04; // client to server answer
+            public const byte PACK_STOC_AUTO_SEND_STATUS = 0x50; // auto send mode change state request
+            public const byte PACK_CTOS_AUTO_SEND_STATUS = 0x05; // auto send mode change state answer  \brief same as ctos status
+            public const byte PACK_STOC_STOP_AUTO_SEND_STATUS = 0x60; // auto send mode stop \brief send only when requested
+        }
+
+        //WORK STATE
+        /**
+         * \brief the order of requests Initialize read -> initialize write-> read mode
+         *  default -> write mode
+         */
+        private const byte WRITE_MODE = 0x00;
+        private const byte READ_MODE = 0x01;
+        private const byte SET_GPIO_MODE = 0x02;
+        private const byte ERROR_MODE = 0x03;
+        private const byte INITIALIZE_READ_MODE = 0x04;
+        private const byte INITIALIZE_WRITE_MODE = 0x05;
+
+        //SET OUTPUT MODE
+        public const byte NORMAL_MODE = 0x00; // 30 OP code
+        //private const byte SET_OUTPU_INDEX_INIT_MODE = 0x01;
+        public const byte SET_OUTPU_INDEX_PREPARE_MODE = 0x01; //OP code 40
+        public const byte SET_OUTPU_INDEX_READY_MODE = 0x02; //OP Code 40 success
+
+        //private const byte SET_OUTPUT_CLEAR_INIT_MODE = 0x04;
+        public const byte SET_OUTPUT_CLEAR_PREPARE_MODE = 0x03; //OP code 40
+        public const byte SET_OUTPUT_CLEAR_READY_MODE = 0x04; //OP code 40  -> output signal: false
+
+        public const byte SET_AUTO_RECV_STATUS_MODE = 0x05; //OP code 50 
+        public const byte SET_AUTO_RECV_STATUS_STOP_MODE = 0x06; //OP code 60
+
+
+        private const int IO_OUT_CNT = 16;
+        private const int IO_IN_CNT = 16;
+        private const int PORT = 9001;
+        private BitArray _io_out = new BitArray(IO_OUT_CNT, false);
+        private BitArray _io_in = new BitArray(IO_IN_CNT, false);
+
+        private Queue<byte> _queueOP = new Queue<byte>();
+        private int lastIDAck = -1;
+        private DateTime lastExecutionTime = DateTime.MinValue; // Initialize to the earliest possible time
+        private const int DELAY_MCU = 35;
+
+
+        //private ushort _card_no = 0;
+        //private ushort _max_board_cnt = 1;
+        //private uint _io_in_cnt = 0;
+        //private uint _io_out_cnt = 0;
+
+        public string LastError = "";
+        public string MODEL = "";
+        public string FW_VER = "";
+        public string HW_VER = "";
+        public string PROTOCAL_VER = "";
+        public int MACHINE_STATE = -1;
+
+        private static TcpMCUBoardDevice instance = null;
+        private static readonly object gpio_device_lock = new object();
+        private static readonly object send_lock = new object();
+        private static readonly object setout_lock = new object();
+
+
+        private bool _is_open = false;
+        private Thread gpio_server_thread = null;
+        private Thread gpio_thread = null;
+        private AutoResetEvent gpio_exit_event = new AutoResetEvent(false);
+        //private AutoResetEvent write_complete_event = new AutoResetEvent(false);
+
+        private TcpListener _server = null;
+        private TcpClient _client = null;
+
+        private DATAS _data = new DATAS(); // all else exept 00 01
+        private DATAS _response_data = new DATAS(); // ack nack when in use only 00 and 01 in use
+        private byte _set_gpio_mode = NORMAL_MODE; // default mode OP Code 30
+
+        private string state_str = "";
+        private string state_old = "";
+        private string lastsendpacket = "";
+        private byte last_send_opcode = 0;
+
+
+        private byte _proc_state = INITIALIZE_READ_MODE;
+
+        private BitArray _edit_io_out = new BitArray(IO_OUT_CNT, false); // if we have some changes in OP COde 40 we use this instead of io_out
+
+        public delegate void WriteMessageEventFunc(string msg);// logging \log error
+        public event WriteMessageEventFunc WriteMessageEvent;
+
+        private System.Windows.Forms.Timer read_timeout_timer = new System.Windows.Forms.Timer(); // if no respond in 3 sec send nack
+        //private System.Windows.Forms.Timer repeat_timeout_timer = new System.Windows.Forms.Timer(); // if no respond in 500ms read data has to be received
+        private bool auto_recv_data_mode = false; //if OP COde 50 in use then auto recieve data mode enable 
+        public bool EDIT_MODE = false; //if OP 40 code is in esponse then in use // when get OP COde 40 then -> true response data OP Code 04 -> false
+
+        public byte GPIO_SEND_MODE
+        {
+            get
+            {
+                return _set_gpio_mode;
+            }
+        }
+        public bool OPEN
+        {
+            get { return _is_open; }
+        }
+
+        public BitArray IO_IN
+        {
+            get
+            {
+                return _io_in;
+            }
+        }
+
+        public BitArray IO_OUT
+        {
+            get { return _io_out; }
+        }
+
+        public static TcpMCUBoardDevice Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new TcpMCUBoardDevice();
+                }
+                return instance;
+            }
+        }
+
+        public bool IS_CONNECTED
+        {
+            get
+            {
+                if (_client != null && _client.Client != null && _client.Client.Connected)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+        async void AysncServer()
+        {
+            _server.Start();
+            while (true)
+            {
+                // 비동기 Accept
+                try
+                {
+                    WriteMessageEvent("[TVC] AysncServer() : Server Open");
+                    TcpClient tc = await _server.AcceptTcpClientAsync().ConfigureAwait(false);
+                    //WriteMessageEvent(tc.Connected + "connected?");
+                    if (tc.Connected == true && _client == null)
+                    {
+                        WriteMessageEvent("[TVC] AysncServer() : client connect!!");
+
+                        _client = tc;
+                        _client.NoDelay = true;
+                        _proc_state = INITIALIZE_READ_MODE;
+                        WriteMessageEvent($"[TVC] : AysncServer() _proc_state {proc_state_str()}");
+                        //gpio_thread = new Thread(new ThreadStart(gpio_proc));
+                        gpio_thread = new Thread(new ThreadStart(gpio_new_proc));
+                        gpio_thread.Start();
+
+
+                    }
+                }
+                catch
+                {
+
+                    WriteMessageEvent("[TVC] AysncServer() : Server Close");
+
+                    if (gpio_exit_event.WaitOne(1))
+                    {
+                        break;
+                    }
+
+                    break;
+                }
+
+                if (gpio_exit_event.WaitOne(1))
+                {
+                    break;
+                }
+                // 새 쓰레드에서 처리
+                //Task.Factory.StartNew(AsyncTcpProcess, tc);
+            }
+        }
+
+        public bool Init()
+        {
+
+            try
+            {
+                if (_server == null)
+                {
+                    _server = new TcpListener(IPAddress.Any, PORT);
+                    set_data_format();
+                    read_timeout_timer.Interval = 5000; // can set timer for response 3000-12000 1000=1sec
+                    read_timeout_timer.Tick += new EventHandler(read_timeout_timer_Tick);
+                   // repeat_timeout_timer.Interval = 500;
+                   // repeat_timeout_timer.Tick += new EventHandler(repeat_timeout_timer_Tick);
+                    gpio_server_thread = new Thread(new ThreadStart(AysncServer));
+                    gpio_server_thread.Start();
+                    _is_open = true;
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        void read_timeout_timer_Tick(Object sender, System.EventArgs e)
+        {
+            if (OPEN)
+            {
+                respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+                WriteMessageEvent($"Nack " + GPIO_OP_CODE.PACK_NACK);
+            }
+        }
+        void repeat_timeout_timer_Tick(Object sender, System.EventArgs e)
+        {
+            if (OPEN)
+            {
+                retry_last_send();
+            }
+        }
+
+        public void DeInit()
+        {
+            try
+            {
+                if (_server != null)
+                {
+                    _server.Stop();
+                    _server.Server.Close();
+                    _server = null;
+                }
+                if (gpio_server_thread != null)
+                {
+                    if (gpio_server_thread.Join(500) == false) //1000
+                    {
+                        gpio_server_thread.Abort();
+                    }
+                }
+                if (OPEN)
+                {
+
+                    if (IS_CONNECTED)
+                    {
+                        _client.Dispose();
+                        _client.Close();
+                        gpio_exit_event.Set();
+                        //write_complete_event.Set();
+                    }
+
+                    if (gpio_thread != null)
+                    {
+                        if (gpio_thread.Join(500) == false) //1000
+                        {
+                            gpio_thread.Abort();
+                        }
+                    }
+                }
+                ForceSetOutToOff();
+                if (instance != null)
+                {
+                    instance = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteMessageEvent("[TVC] DeInit() error : " + ex.Message);
+            }
+        }
+
+        public bool IsPowerOff()
+        {
+            try
+            {
+                if (OPEN)
+                {
+                    GetIn();
+                    for (int i = 0; i < 12; i++)
+                    {
+                        if (IO_IN.Get(i))
+                            return false;
+                    }
+                }
+
+            }
+            catch { }
+
+            return true;
+        }
+
+        public void SetOutClear()
+        {
+
+            try
+            {
+                if (OPEN)
+                {
+                    _set_gpio_mode = SET_OUTPUT_CLEAR_PREPARE_MODE;
+                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                }
+            }
+            catch { }
+        }
+
+        private int read_and_response(int size, string checkOpcode = "00")
+        {
+            size = read_data();
+            if (size == 0)
+            {
+                WriteMessageEvent("[ERROR] Client Connected break");
+                if (_client != null)
+                {
+                    _client.Close();
+                    _client = null;
+                }
+                return size;
+            }
+            else if (size < 0)
+            {
+                respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+                return size;
+            }
+            if (checkOpcode == "") return size;
+            if (!String.IsNullOrEmpty(checkOpcode) && _data.op_code  == checkOpcode) // ||  _data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2")
+            {
+                _data.retry_count = 0;
+                if (checkOpcode == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+                    return size;
+            }
+            else if (_data.op_code == GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+            {
+                _data.retry_count++;
+                return size;
+            }
+            
+            respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+
+            return size;
+        }
+
+        private void gpio_new_proc()
+        {
+            try
+            {
+                int size = 0;
+                SetOutClear();
+                WriteMessageEvent("[TVC] AyscServer() : gpio_proc Open - connected Client");
+                int init_mode = 0;
+                while (true)
+                {
+                    if (init_mode == 0)
+                    {
+                        size = read_and_response(size, GPIO_OP_CODE.PACK_INIT_CM.ToString("X2"));
+                        if (size == 0)
+                        {
+                            return;
+                        }
+                        else if (size < 0)
+                        {
+                            continue;
+                        }
+                        init_mode++;
+
+                    }
+                    if (init_mode == 1)
+                    {
+                        send_data(GPIO_OP_CODE.PACK_INIT_SERVER); //OP Code 02 -> sending response
+                                                                  //repeat_timeout_timer.Start();
+
+                        size = read_and_response(size, GPIO_OP_CODE.PACK_ACK.ToString("X2"));
+                        if (size == 0)
+                        {
+                            return;
+                        }
+                        else if (size < 0)
+                        {
+                            continue;
+                        }
+                        init_mode++;
+                    
+                    }
+                    if (init_mode == 2)
+                    { 
+                        send_data(GPIO_OP_CODE.PACK_STOC_STATUS); //OP Code 30 -> sending response
+                                                                  //repeat_timeout_timer.Start();
+
+                        size = read_and_response(size, GPIO_OP_CODE.PACK_ACK.ToString("X2"));
+                        if (size == 0)
+                        {
+                            return;
+                        }
+                        else if (size < 0)
+                        {
+                            continue;
+                        }
+                        size = read_and_response(size, GPIO_OP_CODE.PACK_CTOS_STATUS.ToString("X2"));
+                        if (size == 0)
+                        {
+                            return;
+                        }
+                        else if (size < 0)
+                        {
+                            continue;
+                        }
+                        init_mode++;
+
+                    }
+                    if (init_mode == 3)
+                    {
+                        send_data(GPIO_OP_CODE.PACK_STOC_AUTO_SEND_STATUS); //OP Code 50 -> sending response
+                                                                            //repeat_timeout_timer.Start();
+
+                        size = read_and_response(size, GPIO_OP_CODE.PACK_ACK.ToString("X2"));
+                        if (size == 0)
+                        {
+                            return;
+                        }
+                        else if (size < 0)
+                        {
+                            continue;
+                        }
+                        init_mode++;
+                    }
+                    break;
+                }
+
+
+                while (true)
+                {
+                    size = read_data();
+                    if (size == 0)
+                    {
+                        WriteMessageEvent("[ERROR] Client Connected break");
+                        if (_client != null)
+                        {
+                            _client.Close();
+                            _client = null;
+                        }
+                        break;
+                    }
+                    else if (size < 0)
+                    {
+                        respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+                        _data.retry_count++;
+                        continue;
+                    }
+                    if (_data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+                    {
+                        _data.retry_count = 0;
+                    }
+                    else if (_data.op_code == GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+                    {
+                        _data.retry_count++;    
+                        if(last_send_opcode != 0)
+                        {
+                            send_data(last_send_opcode);
+                        }
+                        continue;
+                    }
+                    else if (_data.op_code == GPIO_OP_CODE.PACK_CTOS_OUPUT.ToString("X2"))
+                    {
+
+                    }
+                    else if (_data.op_code == GPIO_OP_CODE.PACK_CTOS_AUTO_SEND_STATUS.ToString("X2"))
+                    {
+                        if (OPEN)
+                        {
+                            GetIn();
+                            GetOut();
+                        }
+                    }
+                    respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+                }
+            }
+            catch (Exception ex) {
+                WriteMessageEvent($"exception is ={ex}");
+            }
+        }
+
+        private void gpio_proc()
+        {
+            try
+            {
+                int size = 0;
+                SetOutClear();
+                WriteMessageEvent("[TVC] AysncServer() : gpio_proc Open - connected Client");
+                while (true)
+                {
+                    //Thread.Sleep(DELAY_MCU/4);
+                    switch (_proc_state)
+                    {
+                        case WRITE_MODE:
+                            WriteMessageEvent("case WRITE_MODE");
+
+                            switch (_set_gpio_mode)
+                            {
+                                case NORMAL_MODE:
+                                    WriteMessageEvent("NORMAL_MODE");
+                                    send_data(GPIO_OP_CODE.PACK_STOC_STATUS);
+                                    break;
+                                case SET_OUTPU_INDEX_PREPARE_MODE:
+                                    WriteMessageEvent($"INDEX SEND {GPIO_OP_CODE.PACK_STOC_OUPUT}");
+                                    send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+                                    break;
+                                case SET_OUTPUT_CLEAR_PREPARE_MODE:
+                                    WriteMessageEvent($"CLEAR SEND{GPIO_OP_CODE.PACK_STOC_OUPUT}");
+                                    ForceSetOut();
+                                    send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+                                    break;
+                                case SET_AUTO_RECV_STATUS_MODE:
+                                    WriteMessageEvent("AUTO MODE SWITCH");
+                                    send_data(GPIO_OP_CODE.PACK_STOC_AUTO_SEND_STATUS);
+                                    break;
+                                case SET_AUTO_RECV_STATUS_STOP_MODE:
+                                    WriteMessageEvent("AUTO RECV STATUS STOP MODE");
+                                    send_data(GPIO_OP_CODE.PACK_STOC_STOP_AUTO_SEND_STATUS);
+                                    break;
+                            }
+                            _proc_state = READ_MODE;
+                            WriteMessageEvent($"[TVC] : WRITE_MODE1 _proc_state {proc_state_str()}");
+                            break;
+                        case READ_MODE:
+                            lock (setout_lock)
+                            {
+                                WriteMessageEvent("case READ_MODE");
+                                {
+                                    read_timeout_timer.Start();
+                                    //repeat_timeout_timer.Start();
+                                    size = read_data();
+                                    //repeat_timeout_timer.Stop();
+                                    read_timeout_timer.Stop();
+                                    
+                                    if (_data.op_code != GPIO_OP_CODE.PACK_ACK.ToString("X2") && _data.op_code != GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+                                    {
+                                        if (size < 0)
+                                        {
+                                            respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+                                            WriteMessageEvent($"Nack" + GPIO_OP_CODE.PACK_NACK);
+                                            continue;
+                                        }
+                                        if (size == 0)
+                                        {
+                                            WriteMessageEvent("[ERROR] Client Connected break");
+                                            if (_client != null)
+                                            {
+                                                _client.Close();
+                                                _client = null;
+                                            }
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            //WriteMessageEvent("Read Complete");
+                                            respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+                                            WriteMessageEvent($"Read mode pack ack{GPIO_OP_CODE.PACK_ACK}");
+                                            _proc_state = SET_GPIO_MODE;
+                                            WriteMessageEvent($"[TVC] : READ_MODE1 _proc_state {proc_state_str()}");
+                                        }
+                                    }
+
+                                    else
+                                    {
+                                        if (_data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+                                        {
+                                            //WriteMessageEvent("ACK");
+                                            switch (_set_gpio_mode)
+                                            {
+                                                case SET_OUTPU_INDEX_PREPARE_MODE:
+                                                    _set_gpio_mode = SET_OUTPU_INDEX_READY_MODE;
+                                                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                                    break;
+                                                case SET_OUTPUT_CLEAR_PREPARE_MODE:
+                                                    _set_gpio_mode = SET_OUTPUT_CLEAR_READY_MODE;
+                                                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                                    break;
+                                                case SET_AUTO_RECV_STATUS_MODE:
+                                                    auto_recv_data_mode = true;
+                                                    break;
+                                                case SET_AUTO_RECV_STATUS_STOP_MODE:
+                                                    auto_recv_data_mode = false;
+                                                    break;
+                                            }
+
+
+
+                                            _data.retry_count = 0;
+                                            WriteMessageEvent($"[TVC] : READ_MODE2 retry_count {_data.retry_count}");
+                                            _proc_state = READ_MODE;
+                                            WriteMessageEvent($"[TVC] : READ_MODE2 _proc_state {proc_state_str()}");
+                                            //if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+                                            //write_complete_event.Set();
+
+                                            //if queue of SetOut is not empty
+                                            //get OP from queue
+                                            //send OP
+                                            //if (_queueOP.Count() > 0)
+                                            //{
+                                            //    WriteMessageEvent("QUEUE_MODE");
+                                            //    var op = _queueOP.Dequeue();
+                                            //    send_data(op);
+                                            //}
+
+                                        }
+                                        else if (_data.op_code == GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+                                        {
+                                            if (_data.retry_count >= 3)
+                                            {
+                                                _data.retry_count = 0;
+                                                WriteMessageEvent($"[TVC] : READ_MODE3 retry_count {_data.retry_count}");
+                                                _set_gpio_mode = NORMAL_MODE;
+                                                WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                                _proc_state = ERROR_MODE;
+                                                WriteMessageEvent($"[TVC] : READ_MODE3 _proc_state {proc_state_str()}");
+                                                //  if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+                                                //write_complete_event.Set();
+                                                continue;
+                                            }
+
+                                            if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+                                            {
+                                                _set_gpio_mode = SET_OUTPU_INDEX_PREPARE_MODE;
+                                                WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                            }
+                                            else if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_STATUS.ToString("X2"))
+                                            {
+                                                _set_gpio_mode = NORMAL_MODE;
+                                                WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                            }
+                                            else
+                                            {
+                                                WriteMessageEvent($"[TVC] : [ERROR] Unexpected OP_CODE {_data.data.Substring(0, 2)}");
+                                            }
+
+
+                                            _data.retry_count++;
+                                            WriteMessageEvent($"[TVC] : READ_MODE4 retry_count: {_data.retry_count}");
+                                            _proc_state = WRITE_MODE;
+                                            WriteMessageEvent($"[TVC] : READ_MODE4 _proc_state {proc_state_str()}");
+                                        }
+                                    }
+                                    // Thread.Sleep(DELAY_MCU/4);
+                                }
+                            }
+                            break;
+                        case SET_GPIO_MODE:
+                            WriteMessageEvent("case SET_GPIO_MODE");
+                            //\brief paft 1
+                            //if (_set_gpio_mode == SET_OUTPU_INDEX_PREPARE_MODE || _set_gpio_mode == SET_OUTPUT_CLEAR_PREPARE_MODE)
+                            //{
+                            //    _proc_state = WRITE_MODE;
+                            //    continue;
+                            //}
+
+                            if (OPEN)
+                            {
+                                GetIn();
+                                GetOut();
+                            }
+                            //\brief part 2
+                            //if (_set_gpio_mode == SET_OUTPU_INDEX_READY_MODE || _set_gpio_mode == SET_OUTPUT_CLEAR_READY_MODE)
+                            //    _set_gpio_mode = NORMAL_MODE;
+                            if (_data.op_code == GPIO_OP_CODE.PACK_CTOS_OUPUT.ToString("X2"))
+                            {
+                                EDIT_MODE = false;
+                            }
+                            /**
+                             * \brief in case we would need to change to output we would need to comment this one and uncomment part 1 and part 2
+                             */
+                            if (_set_gpio_mode == SET_OUTPU_INDEX_READY_MODE)
+                            {
+                                _set_gpio_mode = NORMAL_MODE;
+                                WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                            }
+                            if (_set_gpio_mode == SET_OUTPUT_CLEAR_READY_MODE)
+                            {
+                                if (auto_recv_data_mode == false)
+                                {
+                                    WriteMessageEvent("AUTO MODE START");
+                                    _set_gpio_mode = SET_AUTO_RECV_STATUS_MODE;
+                                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                }
+                                else
+                                {
+                                    _set_gpio_mode = NORMAL_MODE;
+                                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                }
+                            }
+
+                            if (auto_recv_data_mode == false)
+                            {
+                                _proc_state = WRITE_MODE;
+                                WriteMessageEvent($"[TVC] : SET_GPIO_MODE1 _proc_state {proc_state_str()}");
+                            }
+                            else
+                            {
+                                _proc_state = READ_MODE;
+                                WriteMessageEvent($"[TVC] : SET_GPIO_MODE2 _proc_state {proc_state_str()}");
+                            }
+                            break;
+                        case ERROR_MODE:
+                            WriteMessageEvent("case ERROR_MODE");
+                            set_data_format();
+                            _proc_state = WRITE_MODE;
+                            WriteMessageEvent($"[TVC] : ERROR_MODE1 _proc_state {proc_state_str()}");
+                            break;
+                        case INITIALIZE_READ_MODE:
+                            WriteMessageEvent("case INITIALIZE_READ_MODE");
+                            MACHINE_STATE = GPIO_STATE.INITIALIZE_COMPLETE;
+
+                            read_timeout_timer.Start();
+                            //repeat_timeout_timer.Start();
+                            size = read_data(true);
+                            //repeat_timeout_timer.Stop();
+                            read_timeout_timer.Stop();
+                            
+
+                            if (size > 0 && _data.op_code == GPIO_OP_CODE.PACK_INIT_CM.ToString("X2")) // if Op Code 20 => change mode from read mode to write mode
+                            {
+                                respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+                                WriteMessageEvent($"Read mode pack ack{GPIO_OP_CODE.PACK_ACK}");
+                                _proc_state = INITIALIZE_WRITE_MODE;
+                                WriteMessageEvent($"[TVC] : INITIALIZE_READ_MODE1 _proc_state {proc_state_str()}");
+                            }
+                            else if (size == 0)
+                            {
+                                if (_client != null)
+                                {
+                                    WriteMessageEvent("[TVC] AysncServer() : client is closed due to lose of packet!!");
+                                    _client.Close();
+                                    _client = null;
+                                }
+                                return;
+                            }
+                            else
+                            {
+                                respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+                                WriteMessageEvent("Nack" + GPIO_OP_CODE.PACK_NACK);
+                                continue;
+                            }
+
+                            break;
+                        case INITIALIZE_WRITE_MODE:
+                            WriteMessageEvent("case INITIALIZE_WRITE_MODE");
+                            //Send 요청에 대한 대답 보내는 함수
+                            send_data(GPIO_OP_CODE.PACK_INIT_SERVER); //OP Code 02 -> sending response
+                            //repeat_timeout_timer.Start();
+                            size = read_data();
+                            //repeat_timeout_timer.Stop();
+
+                            if (size > 0 && _data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+                            {
+                                _proc_state = WRITE_MODE;
+                                WriteMessageEvent($"[TVC] : INITIALIZE_WRITE_MODE1 _proc_state {proc_state_str()}");
+                                MACHINE_STATE = GPIO_STATE.SURVO_INITIALIZE_COMPLETE;
+                            }
+                            else
+                            {
+                                if (_data.retry_count >= 3)
+                                {
+                                    _data.retry_count = 0;
+                                    WriteMessageEvent($"[TVC] : INITIALIZE_WRITE_MODE1 retry_count {_data.retry_count}");
+                                    _set_gpio_mode = NORMAL_MODE;
+                                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                                    LastError = "[ERROR] INITIALIZE_WRITE_MODE Retry Failed...";
+                                    WriteMessageEvent(LastError);
+                                    if (_client != null)
+                                    {
+                                        _client.Close();
+                                        _client = null;
+                                        return;
+                                    }
+                                }
+                                _data.retry_count++;
+                                WriteMessageEvent($"[TVC] : INITIALIZE_WRITE_MODE2 retry_count: {_data.retry_count}");
+
+                                continue;
+                            }
+                            _data.retry_count += 1;
+                            WriteMessageEvent($"[TVC] : INITIALIZE_WRITE_MODE3? retry_count {_data.retry_count}");
+                            break;
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                WriteMessageEvent("[TVC] AysncServer() : client Disconnect!!");
+                //WriteMessageEvent($"[TVC] AysncServer() : client has errors!!{e}");
+
+                ForceSetOutToOff();
+
+                set_data_format();
+                if (_client != null)
+                {
+                    _client.Close();
+                    _client = null;
+                }
+                auto_recv_data_mode = false;
+            }
+        }
+
+        private string set_gpio_mode_str()
+        {
+            switch (_set_gpio_mode)
+            {
+                case NORMAL_MODE: return $"NORMAL_MODE {_set_gpio_mode}"; // 30 OP code
+                //private const byte SET_OUTPU_INDEX_INIT_MODE = 0x01;
+                case SET_OUTPU_INDEX_PREPARE_MODE: return $"SET_OUTPU_INDEX_PREPARE_MODE {_set_gpio_mode}"; //OP code 40
+
+                case SET_OUTPU_INDEX_READY_MODE: return $"SET_OUTPU_INDEX_READY_MODE {_set_gpio_mode}"; //OP Code 40 success
+
+                //private const byte SET_OUTPUT_CLEAR_INIT_MODE = 0x04;
+                case SET_OUTPUT_CLEAR_PREPARE_MODE: return $"SET_OUTPUT_CLEAR_PREPARE_MODE {_set_gpio_mode}"; //OP code 40
+                case SET_OUTPUT_CLEAR_READY_MODE: return $"SET_OUTPUT_CLEAR_READY_MODE {_set_gpio_mode}"; //OP code 40  -> output signal: false
+
+                case SET_AUTO_RECV_STATUS_MODE: return $"SET_AUTO_RECV_STATUS_MODE { _set_gpio_mode}"; //OP code 50 
+                case SET_AUTO_RECV_STATUS_STOP_MODE: return $"SET_AUTO_RECV_STATUS_STOP_MODE {_set_gpio_mode}"; //OP code 60
+                default:
+                    return $"{_set_gpio_mode}";
+            }
+        }
+
+        private string proc_state_str()
+        {
+            switch (_proc_state)
+            {
+                case WRITE_MODE: return "WRITE_MODE";
+                case READ_MODE: return "READ_MODE";
+                case SET_GPIO_MODE: return "SET_GPIO_MODE";
+                case ERROR_MODE: return "ERROR_MODE";
+                case INITIALIZE_READ_MODE: return "INITIALIZE_READ_MODE";
+                case INITIALIZE_WRITE_MODE: return "INITIALIZE_WRITE_MODE";
+            }
+
+            return $"UNKNOWN_{_proc_state}";
+        }
+        private string output_index_str(int index)
+        {
+            switch (index)
+            {
+                case 0: return "X-Ray Lamp";
+                case 2: return "Start lamp";
+                case 3: return "Return lamp";
+                case 4: return "Motion Stage In";
+                case 5: return "Motion Stage Out";
+                default: return $"Unknown {index}";
+            }
+
+            return $"UNKNOWN_{index}";
+        }
+
+        private void TMC_OutputStatus()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //    if (IO_OUT_CNT <= 16)
+                //    {
+                //        ushort out_status = 0;
+                //        if (TMCAEDLL.AIO_GetDOWord(_card_no, 1, ref out_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((out_status >> i) & 0x00001) == 0x0001)
+                //                    _io_out.Set(i, true);
+                //                else
+                //                    _io_out.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //    else if (IO_OUT_CNT <= 32)
+                //    {
+                //        uint out_status = 0;
+                //        if (TMCAEDLL.AIO_GetDODWord(_card_no, 1, ref out_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((out_status >> i) & 0x00001) == 0x0001)
+                //                    _io_out.Set(i, true);
+                //                else
+                //                    _io_out.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //}
+            }
+            catch (Exception ex) { }
+        }
+
+        private void TMC_InputStatus()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //    if (IO_IN_CNT <= 16)
+                //    {
+                //        ushort in_status = 0;
+                //        if (TMCAEDLL.AIO_GetDIBit(_card_no, 1, ref in_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((in_status >> i) & 0x00001) == 0x0001)
+                //                    _io_in.Set(i, true);
+                //                else
+                //                    _io_in.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //    else if (IO_IN_CNT <= 32)
+                //    {
+                //        uint in_status = 0;
+                //        if (TMCAEDLL.AIO_GetDIDWord(_card_no, 1, ref in_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((in_status >> i) & 0x00001) == 0x0001)
+                //                    _io_in.Set(i, true);
+                //                else
+                //                    _io_in.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //}
+            }
+            catch (Exception ex) { }
+        }
+
+        public void SetOutToggle(int index, bool on_off = true)
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //    if (on_off)
+                //    {
+                //        TMCAEDLL.AIO_PutDOBit(_card_no, (ushort)index, tmcDef.CMD_ON);
+                //        Thread.Sleep(200);
+                //        TMCAEDLL.AIO_PutDOBit(_card_no, (ushort)index, tmcDef.CMD_OFF);
+                //    }
+                //    else
+                //    {
+                //        TMCAEDLL.AIO_PutDOBit(_card_no, (ushort)index, tmcDef.CMD_OFF);
+                //        Thread.Sleep(200);
+                //        TMCAEDLL.AIO_PutDOBit(_card_no, (ushort)index, tmcDef.CMD_ON);
+                //    }
+                //}
+            }
+            catch (Exception ex)
+            {
+                LastError = "[TVC] [ERROR] SetOutToggle : " + ex.Message;
+            }
+        }
+
+        private void ForceSetOutToOff()
+        {
+            try
+            {
+                WriteMessageEvent("[TVC] ForceSetOutToOff");
+
+                lock (gpio_device_lock)
+                {
+                    _data.input_state = "0";
+                    _data.cm_state = "0";
+                    _data.output_state = "0";
+                    for (int i = 0; i < _io_in.Length; i++)
+                    {
+                        _io_in.Set(i, false);
+                    }
+
+                    for (int i = 0; i < _edit_io_out.Length; i++)
+                    {
+                        _edit_io_out.Set(i, false);
+                    }
+
+                    for (int i = 0; i < _io_out.Length; i++)
+                    {
+                        _io_out.Set(i, false);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                //LastError = "TMC() : SetOut : " + ex.Message;
+            }
+        }
+
+        private void ForceSetOut()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                {
+
+                    if (OPEN)
+                    {
+                        for (int i = 0; i < _edit_io_out.Length; i++)
+                        {
+                            if (i == 1)
+                                continue;
+                            _edit_io_out.Set(i, false);
+                            _io_out.Set(i, false);
+                        }
+                    }
+                }
+
+                if (auto_recv_data_mode == false)
+                {
+                    _set_gpio_mode = SET_OUTPUT_CLEAR_PREPARE_MODE;
+                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                }
+                else
+                {
+                    //int timeout = 1000;
+                    _set_gpio_mode = SET_OUTPUT_CLEAR_PREPARE_MODE;
+                    WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                    ///WriteMessageEvent($"[TVC] : ForceSetOut");
+                    send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+
+                    //if (_proc_state != READ_MODE)
+                    //    timeout = 3000;
+
+                    //if (write_complete_event.WaitOne(timeout) == false)
+                    //{
+                    //    WriteMessageEvent("[FAILED][TVC]Set Out status Failed");
+                    //}
+                    //else
+                    //    write_complete_event.Reset();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : SetOut : " + ex.Message;
+            }
+        }
+
+        public void SetOut(int index, bool on_off)
+        {
+            // lock (setout_lock)
+            {
+if (!DEBUGMODE.GetMode())
+                try
+                {
+
+                    lock (gpio_device_lock)
+                    {
+                        //ignoring lamp on-off command send
+                        if (index == GPIO_DEF.OUT_RETURN_LAMP ||
+                            index == GPIO_DEF.OUT_START_LAMP)
+                        {
+                            if (on_off == false || (_io_out.Get(index) == on_off))
+                            {
+                                WriteMessageEvent("Ignore cmd");
+                                return;
+                            }
+                        }
+
+
+                        if (index == GPIO_DEF.OUT_XRAY_ON)
+                        {
+                            string state = on_off ? "ON" : "OFF";
+                            // WriteMessageEvent($"Ignore X-Ray Lamp {state}");
+                            return;
+                        }
+                        if (_edit_io_out.Get(index) != on_off)
+                            _edit_io_out.Set(index, on_off);
+
+                        if (_io_out.Get(index) == on_off || index > 5)
+                            return;
+
+                        //Console.WriteLine("Set OUT IO : " + index.ToString() + " " + _io_out.Get(index).ToString() + " " + on_off.ToString() );
+                        //for (int i = 0; i < _io_out.Length; i++)
+                        //{
+                        //   // if (_edit_io_out[i] == _io_out[i])
+                        //        a_edit_io_out[i] = _io_out[i];
+                        //}
+
+                    }
+                    if (auto_recv_data_mode == false)
+                    {
+                        _set_gpio_mode = SET_OUTPU_INDEX_PREPARE_MODE;
+                        WriteMessageEvent($"[TVC] : _set_gpio_mode {set_gpio_mode_str()}");
+                    }
+                    else
+                    {
+                        //int timeout = 1000;
+                        //_set_gpio_mode = SET_OUTPU_INDEX_PREPARE_MODE;
+
+
+
+                        // Instead of direct send_data, put OP in queue
+                        //_queueOP.Enqueue(GPIO_OP_CODE.PACK_STOC_OUPUT); //2023/03/27 not working
+                        string state = on_off ? "ON" : "OFF";
+                        WriteMessageEvent($"[TVC] : SetOut {output_index_str(index)} {state}, index: {index} Qsz: {_queueOP.Count()}");
+                        //Thread.Sleep(50);
+                        send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+                        bool send = true;
+
+                        //if (send == true)
+                        //{
+                        //    send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+                        //    WriteMessageEvent("and another one");
+                        //    send = false;
+                        //}
+
+
+
+                        EDIT_MODE = true;
+                        //if (_proc_state != READ_MODE)
+                        //    timeout = 3000;
+
+                        //if (write_complete_event.WaitOne(timeout) == false)
+                        //{
+                        //    WriteMessageEvent("[FAILED][TVC]Set Out status Failed");
+                        //}
+                        //else
+                        //    write_complete_event.Reset();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LastError = "[TVC] [ERROR] SetOut : " + ex.Message;
+                }
+
+            }
+        }
+        }
+
+        // Bit checking: State string to output string of 1
+        public string Describe(string state_str, string description_str)
+        {
+            string output = description_str; //"IN: "
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //ushort in_status = (ushort)(buff[0] | (buff[1] << 8)); ;
+                ushort in_status = ushort.Parse(state_str, System.Globalization.NumberStyles.HexNumber);
+                for (int i = 0; i < 16; i++)
+                {
+                    if (((in_status >> i) & 0x00001) == 0x0001)
+                        output += " " + i.ToString();
+                    //else
+                    //    _io_in.Set(i, false);
+                }
+                //}
+                //WriteMessageEvent("GetIn");
+            }
+            catch (Exception ex)
+            {
+                output += "Exception: " + ex.Message;
+            }
+
+            return output;
+        }
+
+
+        public bool GetIn()
+        {
+            LastError = "GetOut() : unknown error()";
+
+            try
+            {
+                //byte[] buff = Encoding.ASCII.GetBytes(_data.input_state);
+
+                lock (gpio_device_lock)
+                {
+                    //ushort in_status = (ushort)(buff[0] | (buff[1] << 8)); ;
+                    ushort in_status = ushort.Parse(_data.input_state, System.Globalization.NumberStyles.HexNumber);
+                    for (int i = 0; i < 16; i++)
+                    {
+                        if (((in_status >> i) & 0x00001) == 0x0001)
+                            _io_in.Set(i, true);
+                        else
+                            _io_in.Set(i, false);
+                    }
+                }
+                //WriteMessageEvent("GetIn");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : GetIn : " + ex.Message;
+            }
+
+            return false;
+        }
+
+        public bool GetIn(int index)
+        {
+            LastError = "GetOut() : unknown error()";
+
+            try
+            {
+                //byte[] buff = Encoding.ASCII.GetBytes(_data.input_state);
+
+                lock (gpio_device_lock)
+                {
+                    //ushort in_status = (ushort)(buff[0] | (buff[1] << 8)); ;
+                    ushort in_status = ushort.Parse(_data.input_state, System.Globalization.NumberStyles.HexNumber);
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        if (((in_status >> i) & 0x00001) == 0x0001)
+                            _io_in.Set(i, true);
+                        else
+                            _io_in.Set(i, false);
+                    }
+
+                }
+                return _io_in.Get(index);
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : GetIn : " + ex.Message;
+            }
+
+            return false;
+        }
+
+        public bool GetOut(int index)
+        {
+            LastError = "GetOut() : unknown error()";
+if (!DEBUGMODE.GetMode())
+            try
+            {
+                //byte[] buff = Encoding.ASCII.GetBytes(_data.output_state);
+
+
+                lock (gpio_device_lock)
+                {
+                    //ushort out_status = (ushort)(buff[0] | (buff[1] << 8)); ;
+                    ushort out_status = ushort.Parse(_data.output_state, System.Globalization.NumberStyles.HexNumber);
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        if (((out_status >> i) & 0x00001) == 0x0001)
+                            _io_out.Set(i, true);
+                        else
+                            _io_out.Set(i, false);
+                    }
+                }
+                return _io_out.Get(index);
+
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : GetOut : " + ex.Message;
+            }
+        }
+
+            return false;
+        }
+
+        public bool GetOut()
+        {
+if (!DEBUGMODE.GetMode()) {
+            LastError = "GetOut() : unknown error()";
+            try
+            {
+                //byte[] buff = Encoding.ASCII.GetBytes(_data.output_state);
+
+                lock (gpio_device_lock)
+                {
+                    //ushort out_status = (ushort)(buff[0] | (buff[1] << 8)); ;
+                    ushort out_status = ushort.Parse(_data.output_state, System.Globalization.NumberStyles.HexNumber);
+
+                    for (int i = 0; i < 16; i++)
+                    {
+                        if (((out_status >> i) & 0x00001) == 0x0001)
+                            _io_out.Set(i, true);
+                        else
+                            _io_out.Set(i, false);
+                    }
+                }
+                //WriteMessageEvent("GetOut");
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : GetOut : " + ex.Message;
+            }
+
+}
+            return false;
+        }
+
+
+        public int CalcCheckSum(byte[] command, int length)
+        {
+            int checksum = 0;
+            for (int i = 0; i < length; ++i)
+                checksum += command[i];
+            /*
+                        // Two complement with truncating to 8 least significant bits
+                        //     checksum = 256 - checksum;
+                        //     checksum &= 127;
+                        //ushort MAXWORD = 0x7FFF;
+                        checksum = 0xFFFF - checksum;
+                        checksum += 1;
+                        checksum = ((ushort)checksum) & 0xff; // LOBYTE
+
+                        // Clear 7 bit
+                        //checksum = BIT_CLR(checksum, 7);
+                        checksum = checksum & ~(0x1 << 7);
+
+                        // Set 6 bit
+                        //checksum = BIT_SET(checksum, 6);
+                        checksum = checksum | (0x1 << 6);
+
+                        // have to be in range [0x40..0x7F]
+                        //ASSERT(0x40 <= checksum && checksum <= 0x7F);
+            */
+            return checksum;
+        }
+
+
+        #region Packit Processing
+        private bool split_packet(byte[] buff, int size, bool initialize = false)
+        {
+            int pos = 0;
+            int check_sum = 0;
+            string data = Encoding.ASCII.GetString(buff);
+            data = data.Substring(0, size);
+
+            if (data.Length <= 0)
+            {
+                WriteMessageEvent("[MCU] read_data: [ERROR] Received 0 bytes");
+                return false;
+            }
+
+            if (data.Length % 2 != 0)
+            {
+                WriteMessageEvent($"[MCU] read_data: [ERROR] Received {data.Length} bytes");
+                return false;
+            }
+
+
+
+            if (data.IndexOf(_data.stx) == 0 && data.IndexOf(_data.etx) == (data.Length - 1))
+            {
+                //for (int i = 0; i < size - 5; i++)
+                //{
+                //    check_sum += buff[i];
+                //}
+                check_sum = CalcCheckSum(buff, size - 5);
+
+
+                char[] del_word = new char[] { '[', ']' };
+                string split_data = data.Trim(del_word);
+                _data.packet_num = int.Parse(split_data.Substring(pos, 2), System.Globalization.NumberStyles.HexNumber);
+                pos += 2;
+
+                _data.retry_count = int.Parse(split_data.Substring(pos, 2), System.Globalization.NumberStyles.HexNumber); ;
+                pos += 2;
+
+                _data.op_code = split_data.Substring(pos, 2);
+                pos += 2;
+
+                _data.length = int.Parse(split_data.Substring(pos, 2), System.Globalization.NumberStyles.HexNumber); ;
+                pos += 2;
+
+                _data.data = split_data.Substring(pos, _data.length);
+                pos += _data.length;
+
+                string last_4_check = split_data.Substring(split_data.Length - 4/*pos*/, 4);
+                string calc_check = check_sum.ToString("X4");
+                //if (split_data.Substring(pos, 4).Equals(check_sum.ToString("X4")) == false)
+                //    return false;
+
+                // TODO: Comment later
+                if (string.Equals(last_4_check, calc_check, StringComparison.OrdinalIgnoreCase) == false)
+                    WriteMessageEvent($"[MCU] read_data: Last4: {last_4_check}, Calc: {calc_check} NOT MATCHED");
+                //else
+                //WriteMessageEvent($"[MCU] read_data: Last4: {last_4_check}, Calc: {calc_check} ");
+
+                if (initialize)
+                {
+                    pos = 0;
+                    for (int cnt = 0; cnt < _data.length / 2; cnt++)
+                    {
+                        switch (cnt)
+                        {
+                            case 0:
+                                HW_VER = _data.data.Substring(pos, 2);
+                                pos += 2;
+                                break;
+                            case 1:
+                                FW_VER = _data.data.Substring(pos, 2);
+                                pos += 2;
+                                break;
+                            case 2:
+                                PROTOCAL_VER = _data.data.Substring(pos, 2);
+                                pos += 2;
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!_data.op_code.Equals(GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+                        && !_data.op_code.Equals(GPIO_OP_CODE.PACK_NACK.ToString("X2")))
+                    {
+                        pos = 0;
+                        string state_cm = "";
+                        string state_input = "";
+                        string state_output = "";
+
+                        for (int cnt = 0; cnt < _data.length / 4; cnt++)
+                        {
+                            switch (cnt)
+                            {
+                                case 0:
+                                    _data.cm_state = _data.data.Substring(pos, 4);
+                                    state_cm = Describe(_data.cm_state, "CM:");
+                                    pos += 4;
+                                    break;
+                                case 1:
+                                    _data.input_state = _data.data.Substring(pos, 4);
+                                    state_input = Describe(_data.input_state, "IN:");
+                                    pos += 4;
+                                    break;
+                                case 2:
+                                    _data.output_state = _data.data.Substring(pos, 4);
+                                    state_output = Describe(_data.output_state, "OUT:");
+                                    pos += 4;
+                                    break;
+                            }
+                            state_str = state_cm + ", " + state_input + ", " + state_output;
+                        }
+                    }
+                    else
+                    {
+                        pos = 0;
+                        string state_cm = "";
+                        string state_input = "";
+                        string state_output = "";
+
+                        for (int cnt = 0; cnt < _data.length / 4; cnt++)
+                        {
+                            switch (cnt)
+                            {
+                                case 0:
+                                    _data.cm_state = _data.data.Substring(pos, 4);
+                                    state_cm = Describe(_data.cm_state, "CM:");
+                                    pos += 4;
+                                    break;
+                                case 1:
+                                    _data.input_state = _data.data.Substring(pos, 4);
+                                    state_input = Describe(_data.input_state, "IN:");
+                                    pos += 4;
+                                    break;
+                                case 2:
+                                    _data.output_state = _data.data.Substring(pos, 4);
+                                    state_output = Describe(_data.output_state, "OUT:");
+                                    pos += 4;
+                                    break;
+                            }
+                            state_str = state_cm + ", " + state_input + ", " + state_output;
+                        }
+                    }
+                }
+                if (state_str == state_old)
+                {
+                    WriteMessageEvent($"'{state_str}' is equal to '{state_old}' state is the same");
+                }
+                else
+                {
+                    WriteMessageEvent($"[MCU] read_data: {data} #:{_data.packet_num} retry:{_data.retry_count} op:{_data.op_code} len:{_data.length} {state_str}");
+                    state_old = state_str;
+                }
+
+                // TODO: Comment later
+                //WriteMessageEvent($"[MCU] read_dataall: {data} #:{_data.packet_num} retry:{_data.retry_count} op:{_data.op_code} len:{_data.length} {state_str}");
+
+            }
+            else
+            {
+                WriteMessageEvent($"[MCU] read_data: [ERROR] STX: {data.IndexOf(_data.stx)}, ETX: {data.IndexOf(_data.etx)}");
+                return false;
+            }
+
+            _response_data.packet_num = _data.packet_num;
+            _response_data.retry_count = _data.retry_count;
+            _response_data.data = _data.op_code + _data.packet_num.ToString("X2");
+
+            return true;
+        }
+
+        private string make_packet(byte op_code)
+        {
+            string packet = _data.stx;
+            if (_data.packet_num == 256)
+            {
+                _data.packet_num = 0;
+            }
+            else
+            {
+                _data.packet_num = _data.packet_num + 1;
+            }
+
+            _data.op_code = op_code.ToString("X2");
+            _data.data = set_data(op_code);
+
+            packet += _data.packet_num.ToString("X2");
+            packet += _data.retry_count.ToString("X2");
+            packet += _data.op_code;
+            packet += _data.length.ToString("X2");
+            packet += _data.data;
+            packet += sum_checksum();
+            packet += _data.etx;
+			last_send_opcode = op_code;
+
+            return packet;
+        }
+
+        //사용할 필요가 없지만 일단 남겨 둠
+        //private byte set_op_code(string op_code)
+        //{
+        //    byte res = 0x00;
+        //    byte byte_op_code = Convert.ToByte(op_code);
+
+        //    switch (byte_op_code)
+        //    {
+        //        case GPIO_OP_CODE.PACK_ACK:
+        //            res = GPIO_OP_CODE.PACK_ACK;
+        //            break;
+        //        case GPIO_OP_CODE.PACK_NACK:
+        //            res = GPIO_OP_CODE.PACK_NACK;
+        //            break;
+        //        case GPIO_OP_CODE.PACK_INIT_SEVER:
+        //            res = GPIO_OP_CODE.PACK_INIT_CM;
+        //            break;
+        //        case GPIO_OP_CODE.PACK_CTOS_STATUS:
+        //            res = GPIO_OP_CODE.PACK_STOC_STATUS;
+        //            break;
+        //        case GPIO_OP_CODE.PACK_CTOS_OUPUT:
+        //            res = GPIO_OP_CODE.PACK_STOC_OUPUT;
+        //            break;
+        //        case GPIO_OP_CODE.PACK_CTOS_AUTO_SEND_STATUS:
+        //            res = GPIO_OP_CODE.PACK_STOC_AUTO_SEND_STATUS;
+        //            break;
+        //        default:
+        //            break;
+        //    }
+
+        //    return res;
+        //}
+
+        private string set_data(byte op_code)
+        {
+            string res = "";
+            switch (op_code)
+            {
+                case GPIO_OP_CODE.PACK_ACK:
+                    _data.length = 4;
+                    res = _data.op_code + _data.packet_num;
+                    break;
+                case GPIO_OP_CODE.PACK_NACK:
+                    _data.length = 4;
+                    res = _data.op_code + _data.packet_num;
+                    break;
+                case GPIO_OP_CODE.PACK_INIT_SERVER:
+                    _data.length = 4;
+                    res = "10" + "10";//앞의 것 프로그램 버전이므로 수정해야함 임의로 10 넣은 것
+                    break;
+                case GPIO_OP_CODE.PACK_STOC_STATUS:
+                    _data.length = 4;
+                    res = MACHINE_STATE.ToString("X4");
+                    break;
+                case GPIO_OP_CODE.PACK_STOC_OUPUT:
+                    _data.length = 8;
+                    res = MACHINE_STATE.ToString("X4");
+                    byte[] buff = new byte[_edit_io_out.Length / 8];
+                    _edit_io_out.CopyTo(buff, 0);
+                    ushort io_out = (ushort)(buff[0] | (buff[1] << 8));
+                    //for (int i = 0; i < buff.Length; i++)
+                    //    res += Convert.ToChar(buff[i]).ToString();
+                    res += io_out.ToString("X4");
+                    break;
+                case GPIO_OP_CODE.PACK_STOC_AUTO_SEND_STATUS:
+                    _data.length = 4;
+                    res = MACHINE_STATE.ToString("X4");
+                    break;
+                case GPIO_OP_CODE.PACK_STOC_STOP_AUTO_SEND_STATUS:
+                    _data.length = 4;
+                    res = MACHINE_STATE.ToString("X4");
+                    break;
+                default:
+                    break;
+            }
+
+
+            return res;
+        }
+
+        private void set_data_format()
+        {
+            _data.stx = "[";
+            _data.etx = "]";
+            _data.op_code = "";
+            _data.length = 0;
+            _data.packet_num = 0;
+            _data.retry_count = 1;
+
+            _response_data.stx = "[";
+            _response_data.etx = "]";
+            _response_data.op_code = GPIO_OP_CODE.PACK_ACK.ToString("X2");
+            _response_data.length = 4;
+            _response_data.packet_num = 0;
+            _response_data.retry_count = 1;
+        }
+
+        private string sum_checksum(bool ack_mode = false)
+        {
+            int res = 0;
+            string origin_data = null;
+            if (ack_mode == false)
+                origin_data = _data.stx + _data.packet_num.ToString("X2") + _data.retry_count.ToString("X2") + _data.op_code + _data.length.ToString("X2") + _data.data;
+            else
+                origin_data = _response_data.stx + _response_data.packet_num.ToString("X2") + _response_data.retry_count.ToString("X2") + _response_data.op_code + _response_data.length.ToString("X2") + _response_data.data;
+
+            byte[] buff = Encoding.ASCII.GetBytes(origin_data);
+
+            foreach (byte item in buff)
+                res += item;
+
+            return res.ToString("X4");
+        }
+
+        private int read_data(bool Initialize = false)
+        {
+            //DateTime.Now();
+            //lock (gpio_device_lock)
+            {
+                int size = -1;
+                int cnt = 0;
+                if (_client == null || _client.Connected == false)
+                    return 0;
+
+                byte[] item = new byte[1];
+                byte[] buff = new byte[32];
+                while (true)
+                {
+                    if ((size = _client.GetStream().Read(item, 0, item.Length)) <= 0)
+                        return size;
+                    buff[cnt] = item[0];
+                    cnt++;
+
+                    if (Encoding.ASCII.GetString(item) == _data.etx)
+                        break;
+                }
+
+                size = cnt;
+
+
+                string hex = BitConverter.ToString(buff, 0, size);
+                WriteMessageEvent($"[MCU] read_hex : {hex}   {size} bytes");
+
+
+                if (split_packet(buff, size, Initialize) == false)
+                {
+                    size = -1;
+                    return size;
+                }
+
+                // Update the last execution time
+               // lastExecutionTime = DateTime.Now;
+
+                return size;
+            }
+        }
+
+        private int send_data(byte op_code)
+        {
+            int res = -1;
+            string msg = "";
+            lock (gpio_device_lock)
+            // lock (send_lock)
+            {
+                // Code that should not run more frequently than every 50 Millisecconds
+                if (DateTime.Now.Subtract(lastExecutionTime).TotalMilliseconds < DELAY_MCU)
+                {
+                    Thread.Sleep(DELAY_MCU);
+
+                    //WriteMessageEvent($"[TVC] send_data : [IGNORE] op_code:{op_code}");
+                    //return 1;
+                }
+
+                msg = make_packet(op_code);
+
+                if (msg == string.Empty)
+                    return -1;
+
+                if (_client == null || _client.Connected == false)
+                {
+                    WriteMessageEvent("[TVC] send_data : [ERROR] client is not connected");
+                    return 0;
+                }
+                //if (_queueOP.Count() > 0) 
+                //{
+                //    var en = msg;
+                //    WriteMessageEvent("QUEUE_MODE");
+                //    WriteMessageEvent($"_queueOP.Count() : {_queueOP}");
+                //    _queueOP.Enqueue(en);
+                //    //extra bool for recieved or not
+                //}
+                //foreach(var id in _queueOP);{ }
+
+                lastsendpacket = msg;
+
+
+
+                WriteMessageEvent($"[TVC] send_data : {msg} #:{_data.packet_num} retry:{_data.retry_count} op:{_data.op_code} len:{_data.length}");
+
+                byte[] buff = Encoding.ASCII.GetBytes(msg);
+                _client.GetStream().Write(buff, 0, buff.Length);
+
+                string hex = BitConverter.ToString(buff, 0, buff.Length);
+                WriteMessageEvent($"[TCV] send_hex : {hex}   {buff.Length} bytes");
+
+                // Extra delay to prevent simultaneous sending commands
+
+                // Update the last execution time
+                lastExecutionTime = DateTime.Now;
+            }
+            return res;
+        }
+        private void retry_last_send()
+        {
+            lock (gpio_device_lock)
+            {
+                WriteMessageEvent($"[TVC] repeat_last_data : {lastsendpacket} #:{_data.packet_num} retry:{_data.retry_count} op:{_data.op_code} len:{_data.length}");
+
+                byte[] buff = Encoding.ASCII.GetBytes(lastsendpacket);
+                _client.GetStream().Write(buff, 0, buff.Length);
+
+                string hex = BitConverter.ToString(buff, 0, buff.Length);
+                WriteMessageEvent($"[TCV] repeat_last_hex : {hex}   {buff.Length} bytes");
+
+                // Extra delay to prevent simultaneous sending commands
+
+                // Update the last execution time
+                lastExecutionTime = DateTime.Now;
+            }
+        }
+        private void respose_ack_nack(byte ack_neck)
+        {
+            lock (send_lock)
+            {
+                string msg = _data.stx;
+                string ack = "???";
+                // Code that should not run more frequently than every 50 Millisecconds
+                if (DateTime.Now.Subtract(lastExecutionTime).TotalMilliseconds < DELAY_MCU)
+                {
+                    Thread.Sleep(DELAY_MCU);
+
+                    //WriteMessageEvent($"[TVC] send_data : [IGNORE] op_code:{op_code}");
+                    //return 1;
+                }
+                switch (ack_neck)
+                {
+                    case GPIO_OP_CODE.PACK_ACK:
+                        _response_data.op_code = GPIO_OP_CODE.PACK_ACK.ToString("X2");
+                        WriteMessageEvent("ACK");
+                        ack = "ACK";
+                        if (lastIDAck == _data.packet_num)
+                        {
+                            WriteMessageEvent($"[TVC] lastIDAck : {lastIDAck}, ignore send ack");
+                            return;
+                        }
+                        lastIDAck = _data.packet_num;
+                        break;
+                    case GPIO_OP_CODE.PACK_NACK:
+                        _response_data.op_code = GPIO_OP_CODE.PACK_NACK.ToString("X2");
+                        WriteMessageEvent("NACK");
+                        ack = "NACK";
+                        break;
+                }
+
+                msg += _response_data.packet_num.ToString("X2");
+                msg += _response_data.retry_count.ToString("X2");
+                msg += _response_data.op_code;
+                msg += _response_data.length.ToString("X2");
+                msg += _response_data.data;
+                msg += sum_checksum(true);
+                msg += _response_data.etx;
+
+                WriteMessageEvent($"[TVC] response {ack} : {msg} #:{_response_data.packet_num} retry:{_response_data.retry_count} op:{_response_data.op_code} len:{_response_data.length}");
+
+                byte[] buff = Encoding.ASCII.GetBytes(msg);
+                _client.GetStream().Write(buff, 0, buff.Length);
+
+                // Extra delay to prevent simultaneous sending commands
+                //Thread.Sleep(50);
+                lastExecutionTime = DateTime.Now;
+            }
+        }
+        #endregion
+
+    }
+}
