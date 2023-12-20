@@ -85,7 +85,7 @@ namespace chip_counter
         public chip_counter_type type = chip_counter_type.DIV1;
         public chip_counter_mode mode = chip_counter_mode.AUTO;
 
-        
+
         public static ChipCounterInfo Instance
         {
             get
