@@ -374,7 +374,6 @@ namespace chip_counter.tmc
         }
         public void SetOut(int index, bool on_off)
         {
-#if DEBUG == false
             try
             {
                 lock (gpio_device_lock)
@@ -394,7 +393,6 @@ namespace chip_counter.tmc
             {
                 LastError = "TMC() : SetOut : " + ex.Message;
             }
-#endif
         }
 
         public bool GetIn()
