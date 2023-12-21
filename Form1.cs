@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-
 namespace chip_counter
 {
     public partial class Form1 : Form
@@ -12,26 +11,35 @@ namespace chip_counter
         {
             InitializeComponent();
             InitializeButtons();
+            InitializeGpioINPanels();
+            InitializeGpioOUTPanels();
             string ini_filepath = System.IO.Directory.GetCurrentDirectory() + "\\CHIP_COUNTER.INI";
-            info.config = new configure(ini_filepath);
 
+            info.config = new configure(ini_filepath);
             gpio.Init(info.config);
 
+            IO_Update_Timer.Interval = 1000;
+            IO_Update_Timer.Start();
         }
-        //SmdRobotControl control = SmdRobotControl.Instance;
         private bool m_forcibly = false;
         ModSmdRobotControl control = ModSmdRobotControl.Instance;
 
         ChipCounterInfo info = ChipCounterInfo.Instance;
         GPIOProc gpio = GPIOProc.Instance;
 
-        private Dictionary<Button, int> buttonIds = new Dictionary<Button, int>();
+        private Dictionary<Button, int> buttonIdIns = new Dictionary<Button, int>();
+        private Dictionary<Button, int> buttonIdOuts = new Dictionary<Button, int>();
         private Dictionary<Button, Dictionary<string, Color>> buttonColors = new Dictionary<Button, Dictionary<string, Color>>();
         private Dictionary<Button, Dictionary<string, Color>> buttonColors2 = new Dictionary<Button, Dictionary<string, Color>>();
         private Dictionary<Button, Action<object, EventArgs>> buttonActions = new Dictionary<Button, Action<object, EventArgs>>();
 
+
+        private List<Panel> gpioPanelsIN;  
+        private List<Panel> gpioPanelsOUT;
+
         int test = 0;
-        int id = 0;
+        int idOut = 0;
+        int idIn = 0;
 
         private Logger _log = null;
 
@@ -44,6 +52,24 @@ namespace chip_counter
 
                 return _log;
             }
+        }
+        private void ButtonShow() 
+        {
+            if (info.config.USEROBOT == false)
+            {
+                panel1.Visible = false;
+            }
+            else if (info.config.USEROBOT == true) 
+            {
+                panel1.Visible = true;
+            }
+            IO_Control.Visible = true;
+        }
+        private void UIUpdate() 
+        {
+            if (info.config.USEROBOT == true) { ButtonShow(); }
+            else if (info.config.USEROBOT == false) { ButtonShow(); }
+            else { ButtonShow(); }
         }
         #region RobotControl        
         private void SetTvReady_Click(object sender, EventArgs e)
@@ -177,42 +203,40 @@ namespace chip_counter
 
             //AddButton(buttonName, (sender, e) => PerformButtonNameAction(sender, e), Color.On, Color.OFF);
 
-            AddButton(Btn_Xray, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Start_Lamp, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Return_Lamp, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Input_Stage, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Output_Stage, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Stage_Initialize, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_7th_IO_OUt, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Green_Lamp, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Yellow_Lamp, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Red_Lamp, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(Btn_Tower_Buzz, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(button20, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(button19, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(button18, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(button17, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
-            AddButton(button33, (sender, e) => btn_Click(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_0, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_1, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_2, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_3, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_4, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_5, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_6, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_7, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_8, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_9, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_10, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_11, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_12, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_13, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_14, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
+            AddButton(btn_GPIO_OUT_15, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
 
 
-
-
-            AddButtons(btn_System_Power, Color.Green, Color.Red, 0);
-            AddButtons(btn_Door_Close, Color.Green, Color.Red, 1);
-            AddButtons(btn_Start_Button, Color.Green, Color.Red, 2);
-            AddButtons(btn_Return_Button, Color.Green, Color.Red, 3);
-            AddButtons(Btn_Stage_In, Color.Green, Color.Red, 4);
-            AddButtons(Btn_Stage_Out, Color.Green, Color.Red, 5);
-            AddButtons(Btn_Stage_in_MCU, Color.Green, Color.Red, 6);
-            AddButtons(Btn_Fan_Sensor, Color.Green, Color.Red, 7);
-            AddButtons(Btn_Front_Area, Color.Green, Color.Red, 8);
-            AddButtons(Btn_Second_Fan, Color.Green, Color.Red, 9);
-            AddButtons(Btn_Emergency, Color.Green, Color.Red, 10);
-            AddButtons(Btn_Motor, Color.Green, Color.Red, 11);
-            AddButtons(Btn_Reel1, Color.Green, Color.Red, 12);
-            AddButtons(Btn_Reel2, Color.Green, Color.Red, 13);
-            AddButtons(Btn_Reel3, Color.Green, Color.Red, 14);
-            AddButtons(Btn_Reel4, Color.Green, Color.Red, 15);
+            AddButtons(btn_GPIO_IN_0, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_1, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_2, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_3, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_4, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_5, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_6, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_7, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_8, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_9, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_10, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_11, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_12, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_13, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_14, Color.Green, Color.Red);
+            AddButtons(btn_GPIO_IN_15, Color.Green, Color.Red);
 
 
             // Add more buttons and images as needed
@@ -222,28 +246,45 @@ namespace chip_counter
         {
             Action<object, EventArgs> p = (sender, e) => action(sender, e);
             buttonActions.Add(button, p);
-            buttonIds.Add(button, id);
-            id++;
+            buttonIdOuts.Add(button, idOut);
+            idOut++;
             buttonColors.Add(button, new Dictionary<string, Color>
-    {
-        { "On", onColor },
-        { "Off", offColor }
-    });
+            {
+                { "On", onColor },
+                { "Off", offColor }
+            });
 
             button.Tag = "Off"; // Initial state
 
             button.Click += btn_Click;
         }
+        private void AddButtons(Button button, Color onColor, Color offColor)
+        {
+
+            //Action<object, EventArgs> p = (sender, e) => action(sender, e);
+            //buttonActions.Add(button, p);
+            buttonIdIns.Add(button, idIn);
+            idIn++;
+            buttonColors2.Add(button, new Dictionary<string, Color>
+            {
+                { "On", onColor },
+                { "Off", offColor }
+            });
+
+            button.Tag = "Off"; // Initial state
+
+            button.Click += btn_Clicks;
+        }
 
         private void btn_Click(object sender, EventArgs e)
         {
-            Button button = (Button)sender;
-            int buttonId = buttonIds[button];
+            Button buttonOut = (Button)sender;
+            int buttonId = buttonIdOuts[buttonOut];
 
-            if (button.Tag.ToString() == "Off")
+            if (buttonOut.Tag.ToString() == "Off")
             {
-                button.Tag = "On";
-                button.BackColor = buttonColors[button]["On"];
+                buttonOut.Tag = "On";
+                buttonOut.BackColor = buttonColors[buttonOut]["On"];
                 // Add any other actions or logic for Click when the button is in the "On" state
 
                 // Set GPIO output for the right buttons (assuming button IDs from 0 to 15 are for the right buttons)
@@ -255,8 +296,8 @@ namespace chip_counter
             }
             else
             {
-                button.Tag = "Off";
-                button.BackColor = buttonColors[button]["Off"];
+                buttonOut.Tag = "Off";
+                buttonOut.BackColor = buttonColors[buttonOut]["Off"];
                 // Add any other actions or logic for Click when the button is in the "Off" state
 
                 // Set GPIO output for the right buttons (assuming button IDs from 0 to 15 are for the right buttons)
@@ -269,48 +310,140 @@ namespace chip_counter
         }
         private void btn_Clicks(object sender, EventArgs e)
         {
-            Button buttons = (Button)sender;
-            int buttonId = buttonIds[buttons];
+            Button buttonsIn = (Button)sender;
+            int buttonIdIn = buttonIdIns[buttonsIn];
 
-            if (buttons.Tag.ToString() == "Off")
+            if (buttonsIn.Tag.ToString() == "Off")
             {
-                buttons.Tag = "On";
-                buttons.BackColor = buttonColors2[buttons]["On"];
+                buttonsIn.Tag = "On";
+                buttonsIn.BackColor = buttonColors2[buttonsIn]["On"];
+                Log.Info($"IO_IN {buttonIdIn} Value: {gpio.GetIn(buttonIdIn)}");
                 // Add any other actions or logic for Click when the button is in the "On" state
-
-                // Set GPIO output for the right buttons (assuming button IDs from 0 to 15 are for the right buttons)
-                if (buttonId >= 0 && buttonId <= 15)
-                {
-                    // Replace this with your actual GPIO set logic using the buttonId
-                    gpio.SetOut(buttonId, true);
-                }
             }
             else
             {
-                buttons.Tag = "Off";
-                buttons.BackColor = buttonColors2[buttons]["Off"];
+                buttonsIn.Tag = "Off";
+                buttonsIn.BackColor = buttonColors2[buttonsIn]["Off"];
+                Log.Info($"IO_IN {buttonIdIn} Value: {gpio.GetIn(buttonIdIn)}");
                 // Add any other actions or logic for Click when the button is in the "Off" state
-
-                // Set GPIO output for the right buttons (assuming button IDs from 0 to 15 are for the right buttons)
-                if (buttonId >= 0 && buttonId <= 15)
-                {
-                    // Replace this with your actual GPIO set logic using the buttonId
-                    gpio.SetOut(buttonId, false);
-                }
             }
         }
-        private void AddButtons(Button button, Color onColor, Color offColor, int buttonId)
+
+        // Initialize the gpioPanels in your form's constructor or Load event
+        private void InitializeGpioINPanels()
         {
-            buttonColors2.Add(button, new Dictionary<string, Color>
+            gpioPanelsIN = new List<Panel>
     {
-        { "On", onColor },
-        { "Off", offColor }
-    });
-            buttonIds.Add(button, buttonId);
+        GPIO_IN_0, GPIO_IN_1, GPIO_IN_2, GPIO_IN_3, GPIO_IN_4,
+        GPIO_IN_5, GPIO_IN_6, GPIO_IN_7, GPIO_IN_8, GPIO_IN_9,
+        GPIO_IN_10, GPIO_IN_11, GPIO_IN_12, GPIO_IN_13, GPIO_IN_14, GPIO_IN_15
+    };
+        }
+        private void InitializeGpioOUTPanels()
+        {
+            gpioPanelsOUT = new List<Panel>
+    {
+        GPIO_OUT_0, GPIO_OUT_1, GPIO_OUT_2, GPIO_OUT_3, GPIO_OUT_4,
+        GPIO_OUT_5, GPIO_OUT_6, GPIO_OUT_7, GPIO_OUT_8, GPIO_OUT_9,
+        GPIO_OUT_10, GPIO_OUT_11, GPIO_OUT_12, GPIO_OUT_13, GPIO_OUT_14, GPIO_OUT_15
+    };
+        }
 
-            button.Tag = "Off"; // Initial state
+        private void UpdateIOIN(int id, Color color)
+        {
+            gpioPanelsIN[id].BackColor = color;
+        }
+        private void UpdateIOOUT(int id, Color color)
+        {
+            gpioPanelsOUT[id].BackColor = color;
+        }
 
-            button.Click += btn_Clicks;
+        private void UpdateIO_State()
+        {
+            for (int id = 0; id <= 15; id++)
+            {
+                Color color = gpio.IO_IN.Get(id) ? Color.Green : Color.Red;
+                UpdateIOIN(id, color);
+            }
+            for (int id = 0; id <= 15; id++)
+            {
+                Color color = gpio.IO_OUT.Get(id) ? Color.Green : Color.Red;
+                UpdateIOOUT(id, color);
+            }
+        }
+
+
+        private void Gpio_OUT_Clicked(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            int port = -1;
+            if (sender == btn_GPIO_OUT_0)
+                // 아무것도 하지 않는다.
+                ;
+            else if (sender == btn_GPIO_OUT_1)
+                port = 1;
+            else if (sender == btn_GPIO_OUT_2)
+                port = 2;
+            else if (sender == btn_GPIO_OUT_3)
+                port = 3;
+            else if (sender == btn_GPIO_OUT_4)
+                port = 4;
+            else if (sender == btn_GPIO_OUT_5)
+                port = 5;
+            else if (sender == btn_GPIO_OUT_6)
+                port = 6;
+            else if (sender == btn_GPIO_OUT_7)
+                port = 7;
+            else if (sender == btn_GPIO_OUT_8)
+                port = 8;
+            else if (sender == btn_GPIO_OUT_8)
+                port = 9;
+            else if (sender == btn_GPIO_OUT_10)
+                port = 10;
+            else if (sender == btn_GPIO_OUT_11)
+                port = 11;
+            else if (sender == btn_GPIO_OUT_12)
+                port = 12;
+            else if (sender == btn_GPIO_OUT_13)
+                port = 13;
+            else if (sender == btn_GPIO_OUT_14)
+                port = 14;
+            else if (sender == btn_GPIO_OUT_15)
+                port = 15;
+            if (port > -1)
+                gpio.SetOut(port, TagToBool(sender,port));
+            Log.Debug($"SetOut port: {port} sender : {sender} State : {TagToBool(sender, port)}");
+        }
+        private bool TagToBool(object sender, int port) 
+        {
+            Button button = (Button)sender;
+            if (button.Tag.ToString() == "ON") { return true; }
+            if (button.Tag.ToString() == "OFF") { return false; }
+            else { return false; }
+        }
+        private void gpio_status_timer_Tick(object sender, EventArgs e)
+        {
+            IO_Update_Timer_Tick();
+        }
+        private void IO_Update_Timer_Tick() 
+        {
+            UpdateIO_State();
+        }
+
+        private void btn_UpdateUI_Click(object sender, EventArgs e)
+        {
+            UIUpdate();
+        }
+
+        private void Form1_Load(object sender, EventArgs e) 
+        {
+            UIUpdate();
+        }
+        private void Form1_Close(object sender, FormClosingEventArgs e) 
+        {
+            IO_Update_Timer.Stop();
+            gpio.DeInit();
+
         }
     }
 }

@@ -142,26 +142,6 @@ namespace chip_counter
             }
         }
 
-        //public bool EDIT_MODE
-        //{
-        //    get
-        //    {
-        //        if (_gpio_mode == MCU_GPIO_MODE)
-        //        {
-        //            if (_mcu_device.EDIT_MODE)
-        //                return true;
-        //        }
-        //        return false;
-        //    }
-        //}
-        //private void Log.Info(string log)
-        //{
-        //    try
-        //    {
-        //        Log.Info(log);
-        //    }
-        //    catch { }
-        //}
         public Logger Log
         {
             get
@@ -289,32 +269,7 @@ namespace chip_counter
             }
         }
 
-        //public void SetInit()
-        //{
-        //    try
-        //    {
-        //        if (_gpio_mode != TMC_GPIO_MODE)
-        //            _mcu_device.SetInit();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LastError = "TMC() : SetInit : " + ex.Message;
-        //    }
-        //}
-        //public void CheckStatus(bool val)
-        //{
-        //    try
-        //    {
-        //        if (_gpio_mode != TMC_GPIO_MODE)
-        //            _mcu_device.CheckStatus(val);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LastError = "TMC() : CheckStatus : " + ex.Message;
-        //    }
-        //}
-
-        public void SetOut(List<int> indexs, bool on_off)
+       public void SetOut(List<int> indexs, bool on_off)
         {
             try
             {

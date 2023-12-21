@@ -50,7 +50,7 @@ namespace chip_counter
     public class reel_stage_position
     {
         public int no = 0;
-        public barcode_info barcode = new barcode_info();
+        //public barcode_info barcode = new barcode_info();
     }
 
     public class userinfo
