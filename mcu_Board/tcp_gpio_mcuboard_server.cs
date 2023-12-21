@@ -225,6 +225,16 @@ namespace chip_counter.mcu_Board
             }
         }
 
+
+
+        /*   cyj */
+        public byte GPIO_SEND_MODE
+        {
+            get
+            {
+                return _set_gpio_mode;
+            }
+        }
         public bool OPEN
         {
             get { return _is_open; }
@@ -266,6 +276,20 @@ namespace chip_counter.mcu_Board
                 return false;
             }
         }
+
+        //public bool WaitNeededPacket
+        //{
+        //    get
+        //    {
+        //        return waitNeededPacket;
+        //    }
+
+        //    set
+        //    {
+        //        Log.Info($"waitNeededPacket is changed to {value}");
+        //        waitNeededPacket = value;
+        //    }
+        //}
 
         async void AysncServer()
         {
@@ -515,7 +539,17 @@ namespace chip_counter.mcu_Board
             return size;
         }
 
+        private void OKResultClicked()
+        {
 
+            //if (initstage.OKEvent != null) {
+            //    initstage.OKEvent = () =>
+            //    {
+            //        Log.Info("OK Clicked");
+            //    };
+            //}
+
+        }
         private void gpio_new_proc()
         {
             try
@@ -524,7 +558,10 @@ namespace chip_counter.mcu_Board
                 init_mode = 0;
                 SetOutClear();
                 MACHINE_STATE = GPIO_STATE.INIT;
-
+                if (!ChipCounterInfo.Instance.config.USE_STAGE_INITIALIZING)
+                {
+                    //initializing_finished = true;
+                }
                 Log.Info("[GPIO] AyscServer() : gpio_proc Open - connected Client");
 
                 while (true)
@@ -996,7 +1033,394 @@ namespace chip_counter.mcu_Board
                 MACHINE_STATE = GPIO_STATE.MCU_WAIT;
             }
         }
-  
+        #region unused code.... maybe needed in future
+        //unused code.... maybe needed in future
+        private bool IsInitializingFinished()
+        {
+            bool finishcode = false;
+            finishcode = InitializeFinishCodeGet(finishcode, GPIO_OP_CODE.PACK_CTOS_STATUS.ToString("X2")); //OP Code 03
+            return IO_OUT.Get(GPIO_DEF.OUT_START_LAMP) == true && IO_OUT.Get(GPIO_DEF.OUT_RETURN_LAMP) == true;
+        }
+        private bool InitializeFinishCodeGet(bool finishcode, string code)
+        {
+            int codesize = read_data();
+            if (codesize == 0)
+            {
+                Log.Info("[ERROR] Client Connected break");
+                if (_client != null)
+                {
+                    _client.Close();
+                    _client = null;
+                }
+                return false;
+            }
+            if (_data.op_code.Equals(GPIO_OP_CODE.PACK_CTOS_STATUS.ToString("X2")))
+            {
+                int pos = 0;
+                string state_cm = "";
+                string state_input = "";
+                string state_output = "";
+
+                for (int cnt = 0; cnt < _data.length / 4; cnt++)
+                {
+                    switch (cnt)
+                    {
+                        case 0:
+                            _data.cm_state = _data.data.Substring(pos, 4);
+                            state_cm = Describe(_data.cm_state, "CM:");
+                            pos += 4;
+                            break;
+                        case 1:
+                            _data.input_state = _data.data.Substring(pos, 4);
+                            state_input = Describe(_data.input_state, "IN:");
+                            pos += 4;
+                            break;
+                        case 2:
+                            _data.output_state = _data.data.Substring(pos, 4);
+                            state_output = Describe(_data.output_state, "OUT:");
+                            pos += 4;
+                            break;
+                    }
+                    state_str = state_cm + ", " + state_input + ", " + state_output;
+
+                    if (state_cm.Contains("2"))
+                    {
+                        return false;
+                    }
+                    if (state_cm.Contains("0"))
+                    {
+                        return true;
+                    }
+                    return false; ;
+                }
+
+            }
+            return false;
+        }
+        #endregion
+        #region Previous gpio_proc
+        //private void gpio_proc()
+        //{
+        //    try
+        //    {
+        //        int size = 0;
+        //        SetOutClear();
+        //        Log.Info("[GPIO] AysncServer() : gpio_proc Open - connected Client");
+        //        while (true)
+        //        {
+        //            //Thread.Sleep(DELAY_MCU/4);
+        //            switch (_proc_state)
+        //            {
+        //                case WRITE_MODE:
+        //                    Log.Info("case WRITE_MODE");
+
+        //                    switch (_set_gpio_mode)
+        //                    {
+        //                        case NORMAL_MODE:
+        //                            Log.Info("NORMAL_MODE");
+        //                            send_data(GPIO_OP_CODE.PACK_STOC_STATUS);
+        //                            break;
+        //                        case SET_OUTPU_INDEX_PREPARE_MODE:
+        //                            Log.Info($"INDEX SEND {GPIO_OP_CODE.PACK_STOC_OUPUT}");
+        //                            send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+        //                            break;
+        //                        case SET_OUTPUT_CLEAR_PREPARE_MODE:
+        //                            Log.Info($"CLEAR SEND{GPIO_OP_CODE.PACK_STOC_OUPUT}");
+        //                            ForceSetOut();
+        //                            send_data(GPIO_OP_CODE.PACK_STOC_OUPUT);
+        //                            break;
+        //                        case SET_AUTO_RECV_STATUS_MODE:
+        //                            Log.Info("AUTO MODE SWITCH");
+        //                            send_data(GPIO_OP_CODE.PACK_STOC_AUTO_SEND_STATUS);
+        //                            break;
+        //                        case SET_AUTO_RECV_STATUS_STOP_MODE:
+        //                            Log.Info("AUTO RECV STATUS STOP MODE");
+        //                            send_data(GPIO_OP_CODE.PACK_STOC_STOP_AUTO_SEND_STATUS);
+        //                            break;
+        //                    }
+        //                    _proc_state = READ_MODE;
+        //                    Log.Info($"[GPIO] : WRITE_MODE1 _proc_state {proc_state_str()}");
+        //                    break;
+        //                case READ_MODE:
+        //                    lock (setout_lock)
+        //                    {
+        //                        Log.Info("case READ_MODE");
+        //                        {
+        //                            read_timeout_timer.Start();
+        //                            //repeat_timeout_timer.Start();
+        //                            size = read_data();
+        //                            //repeat_timeout_timer.Stop();
+        //                            read_timeout_timer.Stop();
+
+        //                            if (_data.op_code != GPIO_OP_CODE.PACK_ACK.ToString("X2") && _data.op_code != GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+        //                            {
+        //                                if (size < 0)
+        //                                {
+        //                                    respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+        //                                    Log.Info($"Nack" + GPIO_OP_CODE.PACK_NACK);
+        //                                    continue;
+        //                                }
+        //                                if (size == 0)
+        //                                {
+        //                                    Log.Info("[ERROR] Client Connected break");
+        //                                    if (_client != null)
+        //                                    {
+        //                                        _client.Close();
+        //                                        _client = null;
+        //                                    }
+        //                                    return;
+        //                                }
+        //                                else
+        //                                {
+        //                                    //Log.Info("Read Complete");
+        //                                    respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+        //                                    Log.Info($"Read mode pack ack{GPIO_OP_CODE.PACK_ACK}");
+        //                                    _proc_state = SET_GPIO_MODE;
+        //                                    Log.Info($"[GPIO] : READ_MODE1 _proc_state {proc_state_str()}");
+        //                                }
+        //                            }
+
+        //                            else
+        //                            {
+        //                                if (_data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+        //                                {
+        //                                    //Log.Info("ACK");
+        //                                    switch (_set_gpio_mode)
+        //                                    {
+        //                                        case SET_OUTPU_INDEX_PREPARE_MODE:
+        //                                            _set_gpio_mode = SET_OUTPU_INDEX_READY_MODE;
+        //                                            Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                                            break;
+        //                                        case SET_OUTPUT_CLEAR_PREPARE_MODE:
+        //                                            _set_gpio_mode = SET_OUTPUT_CLEAR_READY_MODE;
+        //                                            Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                                            break;
+        //                                        case SET_AUTO_RECV_STATUS_MODE:
+        //                                            auto_recv_data_mode = true;
+        //                                            break;
+        //                                        case SET_AUTO_RECV_STATUS_STOP_MODE:
+        //                                            auto_recv_data_mode = false;
+        //                                            break;
+        //                                    }
+
+
+
+        //                                    _data.retry_count = 0;
+        //                                    Log.Info($"[GPIO] : READ_MODE2 retry_count {_data.retry_count}");
+        //                                    _proc_state = READ_MODE;
+        //                                    Log.Info($"[GPIO] : READ_MODE2 _proc_state {proc_state_str()}");
+        //                                    //if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+        //                                    //write_complete_event.Set();
+
+        //                                    //if queue of SetOut is not empty
+        //                                    //get OP from queue
+        //                                    //send OP
+        //                                    //if (_queueOP.Count() > 0)
+        //                                    //{
+        //                                    //    Log.Info("QUEUE_MODE");
+        //                                    //    var op = _queueOP.Dequeue();
+        //                                    //    send_data(op);
+        //                                    //}
+
+        //                                }
+        //                                else if (_data.op_code == GPIO_OP_CODE.PACK_NACK.ToString("X2"))
+        //                                {
+        //                                    if (_data.retry_count >= 3)
+        //                                    {
+        //                                        _data.retry_count = 0;
+        //                                        Log.Info($"[GPIO] : READ_MODE3 retry_count {_data.retry_count}");
+        //                                        _set_gpio_mode = NORMAL_MODE;
+        //                                        Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                                        _proc_state = ERROR_MODE;
+        //                                        Log.Info($"[GPIO] : READ_MODE3 _proc_state {proc_state_str()}");
+        //                                        //  if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+        //                                        //write_complete_event.Set();
+        //                                        continue;
+        //                                    }
+
+        //                                    if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_OUPUT.ToString("X2"))
+        //                                    {
+        //                                        _set_gpio_mode = SET_OUTPU_INDEX_PREPARE_MODE;
+        //                                        Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                                    }
+        //                                    else if (_data.data.Substring(0, 2) == GPIO_OP_CODE.PACK_STOC_STATUS.ToString("X2"))
+        //                                    {
+        //                                        _set_gpio_mode = NORMAL_MODE;
+        //                                        Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                                    }
+        //                                    else
+        //                                    {
+        //                                        Log.Info($"[GPIO] : [ERROR] Unexpected OP_CODE {_data.data.Substring(0, 2)}");
+        //                                    }
+
+
+        //                                    _data.retry_count++;
+        //                                    Log.Info($"[GPIO] : READ_MODE4 retry_count: {_data.retry_count}");
+        //                                    _proc_state = WRITE_MODE;
+        //                                    Log.Info($"[GPIO] : READ_MODE4 _proc_state {proc_state_str()}");
+        //                                }
+        //                            }
+        //                            // Thread.Sleep(DELAY_MCU/4);
+        //                        }
+        //                    }
+        //                    break;
+        //                case SET_GPIO_MODE:
+        //                    Log.Info("case SET_GPIO_MODE");
+        //                    //\brief paft 1
+        //                    //if (_set_gpio_mode == SET_OUTPU_INDEX_PREPARE_MODE || _set_gpio_mode == SET_OUTPUT_CLEAR_PREPARE_MODE)
+        //                    //{
+        //                    //    _proc_state = WRITE_MODE;
+        //                    //    continue;
+        //                    //}
+
+        //                    if (OPEN)
+        //                    {
+        //                        GetIn();
+        //                        GetOut();
+        //                    }
+        //                    //\brief part 2
+        //                    //if (_set_gpio_mode == SET_OUTPU_INDEX_READY_MODE || _set_gpio_mode == SET_OUTPUT_CLEAR_READY_MODE)
+        //                    //    _set_gpio_mode = NORMAL_MODE;
+        //                    if (_data.op_code == GPIO_OP_CODE.PACK_CTOS_OUPUT.ToString("X2"))
+        //                    {
+        //                        EDIT_MODE = false;
+        //                    }
+        //                    /**
+        //                     * \brief in case we would need to change to output we would need to comment this one and uncomment part 1 and part 2
+        //                     */
+        //                    if (_set_gpio_mode == SET_OUTPU_INDEX_READY_MODE)
+        //                    {
+        //                        _set_gpio_mode = NORMAL_MODE;
+        //                        Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                    }
+        //                    if (_set_gpio_mode == SET_OUTPUT_CLEAR_READY_MODE)
+        //                    {
+        //                        if (auto_recv_data_mode == false)
+        //                        {
+        //                            Log.Info("AUTO MODE START");
+        //                            _set_gpio_mode = SET_AUTO_RECV_STATUS_MODE;
+        //                            Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                        }
+        //                        else
+        //                        {
+        //                            _set_gpio_mode = NORMAL_MODE;
+        //                            Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                        }
+        //                    }
+
+        //                    if (auto_recv_data_mode == false)
+        //                    {
+        //                        _proc_state = WRITE_MODE;
+        //                        Log.Info($"[GPIO] : SET_GPIO_MODE1 _proc_state {proc_state_str()}");
+        //                    }
+        //                    else
+        //                    {
+        //                        _proc_state = READ_MODE;
+        //                        Log.Info($"[GPIO] : SET_GPIO_MODE2 _proc_state {proc_state_str()}");
+        //                    }
+        //                    break;
+        //                case ERROR_MODE:
+        //                    Log.Info("case ERROR_MODE");
+        //                    set_data_format();
+        //                    _proc_state = WRITE_MODE;
+        //                    Log.Info($"[GPIO] : ERROR_MODE1 _proc_state {proc_state_str()}");
+        //                    break;
+        //                case INITIALIZE_READ_MODE:
+        //                    Log.Info("case INITIALIZE_READ_MODE");
+        //                    MACHINE_STATE = GPIO_STATE.INITIALIZE_COMPLETE;
+
+        //                    read_timeout_timer.Start();
+        //                    //repeat_timeout_timer.Start();
+        //                    size = read_data(true);
+        //                    //repeat_timeout_timer.Stop();
+        //                    read_timeout_timer.Stop();
+
+
+        //                    if (size > 0 && _data.op_code == GPIO_OP_CODE.PACK_INIT_CM.ToString("X2")) // if Op Code 20 => change mode from read mode to write mode
+        //                    {
+        //                        respose_ack_nack(GPIO_OP_CODE.PACK_ACK);
+        //                        Log.Info($"Read mode pack ack{GPIO_OP_CODE.PACK_ACK}");
+        //                        _proc_state = INITIALIZE_WRITE_MODE;
+        //                        Log.Info($"[GPIO] : INITIALIZE_READ_MODE1 _proc_state {proc_state_str()}");
+        //                    }
+        //                    else if (size == 0)
+        //                    {
+        //                        if (_client != null)
+        //                        {
+        //                            Log.Info("[GPIO] AysncServer() : client is closed due to lose of packet!!");
+        //                            _client.Close();
+        //                            _client = null;
+        //                        }
+        //                        return;
+        //                    }
+        //                    else
+        //                    {
+        //                        respose_ack_nack(GPIO_OP_CODE.PACK_NACK);
+        //                        Log.Info("Nack" + GPIO_OP_CODE.PACK_NACK);
+        //                        continue;
+        //                    }
+
+        //                    break;
+        //                case INITIALIZE_WRITE_MODE:
+        //                    Log.Info("case INITIALIZE_WRITE_MODE");
+        //                    //Send 요청에 대한 대답 보내는 함수
+        //                    send_data(GPIO_OP_CODE.PACK_INIT_SERVER); //OP Code 02 -> sending response
+        //                    //repeat_timeout_timer.Start();
+        //                    size = read_data();
+        //                    //repeat_timeout_timer.Stop();
+
+        //                    if (size > 0 && _data.op_code == GPIO_OP_CODE.PACK_ACK.ToString("X2"))
+        //                    {
+        //                        _proc_state = WRITE_MODE;
+        //                        Log.Info($"[GPIO] : INITIALIZE_WRITE_MODE1 _proc_state {proc_state_str()}");
+        //                        MACHINE_STATE = GPIO_STATE.SURVO_INITIALIZE_COMPLETE;
+        //                    }
+        //                    else
+        //                    {
+        //                        if (_data.retry_count >= 3)
+        //                        {
+        //                            _data.retry_count = 0;
+        //                            Log.Info($"[GPIO] : INITIALIZE_WRITE_MODE1 retry_count {_data.retry_count}");
+        //                            _set_gpio_mode = NORMAL_MODE;
+        //                            Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+        //                            LastError = "[ERROR] INITIALIZE_WRITE_MODE Retry Failed...";
+        //                            Log.Info(LastError);
+        //                            if (_client != null)
+        //                            {
+        //                                _client.Close();
+        //                                _client = null;
+        //                                return;
+        //                            }
+        //                        }
+        //                        _data.retry_count++;
+        //                        Log.Info($"[GPIO] : INITIALIZE_WRITE_MODE2 retry_count: {_data.retry_count}");
+
+        //                        continue;
+        //                    }
+        //                    _data.retry_count += 1;
+        //                    Log.Info($"[GPIO] : INITIALIZE_WRITE_MODE3? retry_count {_data.retry_count}");
+        //                    break;
+        //            }
+        //        }
+
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Log.Info("[GPIO] AysncServer() : client Disconnect!!");
+        //        //Log.Info($"[GPIO] AysncServer() : client has errors!!{e}");
+
+        //        ForceSetOutToOff();
+
+        //        set_data_format();
+        //        if (_client != null)
+        //        {
+        //            _client.Close();
+        //            _client = null;
+        //        }
+        //        auto_recv_data_mode = false;
+        //    }
+        //}
+        #endregion
         private string set_gpio_mode_str()
         {
             switch (_set_gpio_mode)
@@ -1046,6 +1470,85 @@ namespace chip_counter.mcu_Board
 
             return $"UNKNOWN_{index}";
         }
+        #region unused code maybe useful in future
+        private void TMC_OutputStatus()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //    if (IO_OUT_CNT <= 16)
+                //    {
+                //        ushort out_status = 0;
+                //        if (TMCAEDLL.AIO_GetDOWord(_card_no, 1, ref out_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((out_status >> i) & 0x00001) == 0x0001)
+                //                    _io_out.Set(i, true);
+                //                else
+                //                    _io_out.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //    else if (IO_OUT_CNT <= 32)
+                //    {
+                //        uint out_status = 0;
+                //        if (TMCAEDLL.AIO_GetDODWord(_card_no, 1, ref out_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((out_status >> i) & 0x00001) == 0x0001)
+                //                    _io_out.Set(i, true);
+                //                else
+                //                    _io_out.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //}
+            }
+            catch (Exception ex) { }
+        }
+
+        private void TMC_InputStatus()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                //{
+                //    if (IO_IN_CNT <= 16)
+                //    {
+                //        ushort in_status = 0;
+                //        if (TMCAEDLL.AIO_GetDIBit(_card_no, 1, ref in_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((in_status >> i) & 0x00001) == 0x0001)
+                //                    _io_in.Set(i, true);
+                //                else
+                //                    _io_in.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //    else if (IO_IN_CNT <= 32)
+                //    {
+                //        uint in_status = 0;
+                //        if (TMCAEDLL.AIO_GetDIDWord(_card_no, 1, ref in_status) == 0)
+                //        {
+                //            for (int i = 0; i < IO_OUT_CNT; i++)
+                //            {
+                //                if (((in_status >> i) & 0x00001) == 0x0001)
+                //                    _io_in.Set(i, true);
+                //                else
+                //                    _io_in.Set(i, false);
+                //            }
+                //        }
+                //    }
+                //}
+            }
+            catch (Exception ex) { }
+        }
+        #endregion
         public void SetOutToggle(int index, bool on_off = true)
         {
             try
@@ -1135,6 +1638,62 @@ namespace chip_counter.mcu_Board
                     continue;
                 _edit_io_out.Set(i, false);
             }
+        }
+
+        private void ForceSetOut()
+        {
+            try
+            {
+                //lock (gpio_device_lock)
+                {
+
+                    if (OPEN)
+                    {
+                        for (int i = 0; i < _edit_io_out.Length; i++)
+                        {
+                            if (i == 1)
+                                continue;
+                            _edit_io_out.Set(i, false);
+                            _io_out.Set(i, false);
+                        }
+                    }
+                }
+
+                if (auto_recv_data_mode == false)
+                {
+                    _set_gpio_mode = SET_OUTPUT_CLEAR_PREPARE_MODE;
+                    Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+                }
+                else
+                {
+                    //int timeout = 1000;
+                    _set_gpio_mode = SET_OUTPUT_CLEAR_PREPARE_MODE;
+                    Log.Info($"[GPIO] : _set_gpio_mode {set_gpio_mode_str()}");
+                    ///Log.Info($"[GPIO] : ForceSetOut");
+                    send_data_w(GPIO_OP_CODE.PACK_STOC_OUPUT);
+
+                    //if (_proc_state != READ_MODE)
+                    //    timeout = 3000;
+
+                    //if (write_complete_event.WaitOne(timeout) == false)
+                    //{
+                    //    Log.Info("[FAILED][GPIO]Set Out status Failed");
+                    //}
+                    //else
+                    //    write_complete_event.Reset();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                LastError = "TMC() : SetOut : " + ex.Message;
+            }
+        }
+
+        public void SetInit()
+        {
+            send_data_w(GPIO_OP_CODE.PACK_STOC_OUPUT, true);
+            MACHINE_STATE = GPIO_STATE.STAGE_INITIALIZING;
         }
 
         public void SetOut(List<int> indexs, bool on_off)

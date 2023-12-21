@@ -338,9 +338,10 @@ namespace chip_counter
 
         public void SetOut(int index, bool on_off)
         {
-
+#if DEBUG
             Log.Debug($"SetOut : Index : {index} State : {on_off}");
-
+#endif
+#if DEBUG == false
             try
             {
                 if (_gpio_mode == TMC_GPIO_MODE)
@@ -353,7 +354,7 @@ namespace chip_counter
             {
                 LastError = "TMC() : SetOut : " + ex.Message;
             }
-
+#endif
         }
 
         public bool GetIn()
