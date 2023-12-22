@@ -259,9 +259,6 @@ namespace chip_counter
     public class configure : configure_ini
     {
         public string APP_VER = "Ver 0.0.1 (2020-01-13 14:00:00)";
-
-        private int print_font_size = 10;
-
         
         public configure(string ini_filepath) : base(ini_filepath)
         {
@@ -270,11 +267,11 @@ namespace chip_counter
           
         }
         
-        public bool USEROBOT
+        public bool USE_ROBOT
         {
             get
             {
-                string temp = load("WORK_CONFIG", "USEROBOT", "OFF");
+                string temp = load("WORK_CONFIG", "USE_ROBOT", "OFF");
                 if (String.Compare(temp, "ON", true) == 0 ||
                     String.Compare(temp, "USE", true) == 0 ||
                     String.Compare(temp, "1", true) == 0 ||
@@ -287,9 +284,9 @@ namespace chip_counter
             set
             {
                 if (value)
-                    save("WORK_CONFIG", "USEROBOT", "ON");
+                    save("WORK_CONFIG", "USE_ROBOT", "ON");
                 else
-                    save("WORK_CONFIG", "USEROBOT", "OFF");
+                    save("WORK_CONFIG", "USE_ROBOT", "OFF");
             }
         }
         

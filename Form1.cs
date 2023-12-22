@@ -18,7 +18,7 @@ namespace chip_counter
             info.config = new configure(ini_filepath);
             gpio.Init(info.config);
 
-            IO_Update_Timer.Interval = 1000;
+            IO_Update_Timer.Interval = 500;
             IO_Update_Timer.Start();
         }
         private bool m_forcibly = false;
@@ -55,11 +55,11 @@ namespace chip_counter
         }
         private void ButtonShow() 
         {
-            if (info.config.USEROBOT == false)
+            if (info.config.USE_ROBOT == false)
             {
                 panel1.Visible = false;
             }
-            else if (info.config.USEROBOT == true) 
+            else if (info.config.USE_ROBOT == true) 
             {
                 panel1.Visible = true;
             }
@@ -67,8 +67,8 @@ namespace chip_counter
         }
         private void UIUpdate() 
         {
-            if (info.config.USEROBOT == true) { ButtonShow(); }
-            else if (info.config.USEROBOT == false) { ButtonShow(); }
+            if (info.config.USE_ROBOT == true) { ButtonShow(); }
+            else if (info.config.USE_ROBOT == false) { ButtonShow(); }
             else { ButtonShow(); }
         }
         #region RobotControl        
@@ -220,7 +220,7 @@ namespace chip_counter
             AddButton(btn_GPIO_OUT_14, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
             AddButton(btn_GPIO_OUT_15, (sender, e) => Gpio_OUT_Clicked(sender, e), Color.Green, Color.Red);
 
-
+            /*
             AddButtons(btn_GPIO_IN_0, Color.Green, Color.Red);
             AddButtons(btn_GPIO_IN_1, Color.Green, Color.Red);
             AddButtons(btn_GPIO_IN_2, Color.Green, Color.Red);
@@ -237,6 +237,7 @@ namespace chip_counter
             AddButtons(btn_GPIO_IN_13, Color.Green, Color.Red);
             AddButtons(btn_GPIO_IN_14, Color.Green, Color.Red);
             AddButtons(btn_GPIO_IN_15, Color.Green, Color.Red);
+            */
 
 
             // Add more buttons and images as needed

@@ -127,9 +127,9 @@ namespace chip_counter
             // 
             // SetTvReady
             // 
-            this.SetTvReady.Location = new System.Drawing.Point(3, 53);
+            this.SetTvReady.Location = new System.Drawing.Point(3, 46);
             this.SetTvReady.Name = "SetTvReady";
-            this.SetTvReady.Size = new System.Drawing.Size(164, 36);
+            this.SetTvReady.Size = new System.Drawing.Size(141, 31);
             this.SetTvReady.TabIndex = 0;
             this.SetTvReady.Text = "SetTvReady";
             this.SetTvReady.UseVisualStyleBackColor = true;
@@ -137,9 +137,9 @@ namespace chip_counter
             // 
             // SetTvInspectionDone
             // 
-            this.SetTvInspectionDone.Location = new System.Drawing.Point(3, 197);
+            this.SetTvInspectionDone.Location = new System.Drawing.Point(3, 171);
             this.SetTvInspectionDone.Name = "SetTvInspectionDone";
-            this.SetTvInspectionDone.Size = new System.Drawing.Size(164, 36);
+            this.SetTvInspectionDone.Size = new System.Drawing.Size(141, 31);
             this.SetTvInspectionDone.TabIndex = 1;
             this.SetTvInspectionDone.Text = "SetTvInspectionDone";
             this.SetTvInspectionDone.UseVisualStyleBackColor = true;
@@ -147,9 +147,9 @@ namespace chip_counter
             // 
             // SetTvBarcodeOK
             // 
-            this.SetTvBarcodeOK.Location = new System.Drawing.Point(3, 101);
+            this.SetTvBarcodeOK.Location = new System.Drawing.Point(3, 88);
             this.SetTvBarcodeOK.Name = "SetTvBarcodeOK";
-            this.SetTvBarcodeOK.Size = new System.Drawing.Size(164, 36);
+            this.SetTvBarcodeOK.Size = new System.Drawing.Size(141, 31);
             this.SetTvBarcodeOK.TabIndex = 2;
             this.SetTvBarcodeOK.Text = "SetTvBarcodeOK";
             this.SetTvBarcodeOK.UseVisualStyleBackColor = true;
@@ -157,9 +157,9 @@ namespace chip_counter
             // 
             // SetTvBarcodeNG
             // 
-            this.SetTvBarcodeNG.Location = new System.Drawing.Point(3, 149);
+            this.SetTvBarcodeNG.Location = new System.Drawing.Point(3, 129);
             this.SetTvBarcodeNG.Name = "SetTvBarcodeNG";
-            this.SetTvBarcodeNG.Size = new System.Drawing.Size(164, 36);
+            this.SetTvBarcodeNG.Size = new System.Drawing.Size(141, 31);
             this.SetTvBarcodeNG.TabIndex = 3;
             this.SetTvBarcodeNG.Text = "SetTvBarcodeNG";
             this.SetTvBarcodeNG.UseVisualStyleBackColor = true;
@@ -167,9 +167,9 @@ namespace chip_counter
             // 
             // SetTvReelIsNotRegistered
             // 
-            this.SetTvReelIsNotRegistered.Location = new System.Drawing.Point(3, 248);
+            this.SetTvReelIsNotRegistered.Location = new System.Drawing.Point(3, 215);
             this.SetTvReelIsNotRegistered.Name = "SetTvReelIsNotRegistered";
-            this.SetTvReelIsNotRegistered.Size = new System.Drawing.Size(164, 36);
+            this.SetTvReelIsNotRegistered.Size = new System.Drawing.Size(141, 31);
             this.SetTvReelIsNotRegistered.TabIndex = 4;
             this.SetTvReelIsNotRegistered.Text = "SetTvReelIsNotRegistered";
             this.SetTvReelIsNotRegistered.UseVisualStyleBackColor = true;
@@ -177,9 +177,9 @@ namespace chip_counter
             // 
             // ResetBarcode
             // 
-            this.ResetBarcode.Location = new System.Drawing.Point(3, 296);
+            this.ResetBarcode.Location = new System.Drawing.Point(3, 257);
             this.ResetBarcode.Name = "ResetBarcode";
-            this.ResetBarcode.Size = new System.Drawing.Size(164, 36);
+            this.ResetBarcode.Size = new System.Drawing.Size(141, 31);
             this.ResetBarcode.TabIndex = 5;
             this.ResetBarcode.Text = "ResetBarcode";
             this.ResetBarcode.UseVisualStyleBackColor = true;
@@ -187,9 +187,9 @@ namespace chip_counter
             // 
             // SetIOSettings
             // 
-            this.SetIOSettings.Location = new System.Drawing.Point(3, 6);
+            this.SetIOSettings.Location = new System.Drawing.Point(3, 5);
             this.SetIOSettings.Name = "SetIOSettings";
-            this.SetIOSettings.Size = new System.Drawing.Size(164, 36);
+            this.SetIOSettings.Size = new System.Drawing.Size(141, 31);
             this.SetIOSettings.TabIndex = 6;
             this.SetIOSettings.Text = "SetIOSettings";
             this.SetIOSettings.UseVisualStyleBackColor = true;
@@ -197,9 +197,9 @@ namespace chip_counter
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(185, 217);
+            this.button8.Location = new System.Drawing.Point(159, 188);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(75, 23);
+            this.button8.Size = new System.Drawing.Size(64, 20);
             this.button8.TabIndex = 7;
             this.button8.Text = "button8";
             this.button8.UseVisualStyleBackColor = true;
@@ -207,9 +207,9 @@ namespace chip_counter
             // 
             // StageInSend
             // 
-            this.StageInSend.Location = new System.Drawing.Point(227, 283);
+            this.StageInSend.Location = new System.Drawing.Point(195, 245);
             this.StageInSend.Name = "StageInSend";
-            this.StageInSend.Size = new System.Drawing.Size(139, 35);
+            this.StageInSend.Size = new System.Drawing.Size(119, 30);
             this.StageInSend.TabIndex = 8;
             this.StageInSend.Text = "StageInSend";
             this.StageInSend.UseVisualStyleBackColor = true;
@@ -217,9 +217,9 @@ namespace chip_counter
             // 
             // StageOutSend
             // 
-            this.StageOutSend.Location = new System.Drawing.Point(380, 283);
+            this.StageOutSend.Location = new System.Drawing.Point(326, 245);
             this.StageOutSend.Name = "StageOutSend";
-            this.StageOutSend.Size = new System.Drawing.Size(139, 35);
+            this.StageOutSend.Size = new System.Drawing.Size(119, 30);
             this.StageOutSend.TabIndex = 9;
             this.StageOutSend.Text = "StageOutSend";
             this.StageOutSend.UseVisualStyleBackColor = true;
@@ -227,9 +227,9 @@ namespace chip_counter
             // 
             // SmdBarcodeReadyFunc
             // 
-            this.SmdBarcodeReadyFunc.Location = new System.Drawing.Point(185, 9);
+            this.SmdBarcodeReadyFunc.Location = new System.Drawing.Point(159, 8);
             this.SmdBarcodeReadyFunc.Name = "SmdBarcodeReadyFunc";
-            this.SmdBarcodeReadyFunc.Size = new System.Drawing.Size(164, 36);
+            this.SmdBarcodeReadyFunc.Size = new System.Drawing.Size(141, 31);
             this.SmdBarcodeReadyFunc.TabIndex = 10;
             this.SmdBarcodeReadyFunc.Text = "SmdBarcodeReadyFunc";
             this.SmdBarcodeReadyFunc.UseVisualStyleBackColor = true;
@@ -237,9 +237,9 @@ namespace chip_counter
             // 
             // SmdPlaceReadyFunc
             // 
-            this.SmdPlaceReadyFunc.Location = new System.Drawing.Point(185, 52);
+            this.SmdPlaceReadyFunc.Location = new System.Drawing.Point(159, 45);
             this.SmdPlaceReadyFunc.Name = "SmdPlaceReadyFunc";
-            this.SmdPlaceReadyFunc.Size = new System.Drawing.Size(164, 36);
+            this.SmdPlaceReadyFunc.Size = new System.Drawing.Size(141, 31);
             this.SmdPlaceReadyFunc.TabIndex = 11;
             this.SmdPlaceReadyFunc.Text = "SmdPlaceReadyFunc";
             this.SmdPlaceReadyFunc.UseVisualStyleBackColor = true;
@@ -247,9 +247,9 @@ namespace chip_counter
             // 
             // SmdPickupReadyFunc
             // 
-            this.SmdPickupReadyFunc.Location = new System.Drawing.Point(185, 92);
+            this.SmdPickupReadyFunc.Location = new System.Drawing.Point(159, 80);
             this.SmdPickupReadyFunc.Name = "SmdPickupReadyFunc";
-            this.SmdPickupReadyFunc.Size = new System.Drawing.Size(164, 36);
+            this.SmdPickupReadyFunc.Size = new System.Drawing.Size(141, 31);
             this.SmdPickupReadyFunc.TabIndex = 12;
             this.SmdPickupReadyFunc.Text = "SmdPickupReadyFunc";
             this.SmdPickupReadyFunc.UseVisualStyleBackColor = true;
@@ -257,9 +257,9 @@ namespace chip_counter
             // 
             // SmdResetFunc
             // 
-            this.SmdResetFunc.Location = new System.Drawing.Point(185, 133);
+            this.SmdResetFunc.Location = new System.Drawing.Point(159, 115);
             this.SmdResetFunc.Name = "SmdResetFunc";
-            this.SmdResetFunc.Size = new System.Drawing.Size(164, 36);
+            this.SmdResetFunc.Size = new System.Drawing.Size(141, 31);
             this.SmdResetFunc.TabIndex = 13;
             this.SmdResetFunc.Text = "SmdResetFunc";
             this.SmdResetFunc.UseVisualStyleBackColor = true;
@@ -267,9 +267,9 @@ namespace chip_counter
             // 
             // SmdRobotInit
             // 
-            this.SmdRobotInit.Location = new System.Drawing.Point(360, 9);
+            this.SmdRobotInit.Location = new System.Drawing.Point(309, 8);
             this.SmdRobotInit.Name = "SmdRobotInit";
-            this.SmdRobotInit.Size = new System.Drawing.Size(164, 36);
+            this.SmdRobotInit.Size = new System.Drawing.Size(141, 31);
             this.SmdRobotInit.TabIndex = 14;
             this.SmdRobotInit.Text = "SmdRobotInit";
             this.SmdRobotInit.UseVisualStyleBackColor = true;
@@ -277,9 +277,9 @@ namespace chip_counter
             // 
             // SmdSendInspectionDone
             // 
-            this.SmdSendInspectionDone.Location = new System.Drawing.Point(360, 52);
+            this.SmdSendInspectionDone.Location = new System.Drawing.Point(309, 45);
             this.SmdSendInspectionDone.Name = "SmdSendInspectionDone";
-            this.SmdSendInspectionDone.Size = new System.Drawing.Size(164, 36);
+            this.SmdSendInspectionDone.Size = new System.Drawing.Size(141, 31);
             this.SmdSendInspectionDone.TabIndex = 15;
             this.SmdSendInspectionDone.Text = "SmdSendInspectionDone";
             this.SmdSendInspectionDone.UseVisualStyleBackColor = true;
@@ -287,9 +287,9 @@ namespace chip_counter
             // 
             // SmdSendTvReady
             // 
-            this.SmdSendTvReady.Location = new System.Drawing.Point(360, 93);
+            this.SmdSendTvReady.Location = new System.Drawing.Point(309, 81);
             this.SmdSendTvReady.Name = "SmdSendTvReady";
-            this.SmdSendTvReady.Size = new System.Drawing.Size(164, 36);
+            this.SmdSendTvReady.Size = new System.Drawing.Size(141, 31);
             this.SmdSendTvReady.TabIndex = 16;
             this.SmdSendTvReady.Text = "SmdSendTvReady";
             this.SmdSendTvReady.UseVisualStyleBackColor = true;
@@ -297,9 +297,9 @@ namespace chip_counter
             // 
             // SmdSendPickupOrReady
             // 
-            this.SmdSendPickupOrReady.Location = new System.Drawing.Point(360, 133);
+            this.SmdSendPickupOrReady.Location = new System.Drawing.Point(309, 115);
             this.SmdSendPickupOrReady.Name = "SmdSendPickupOrReady";
-            this.SmdSendPickupOrReady.Size = new System.Drawing.Size(164, 36);
+            this.SmdSendPickupOrReady.Size = new System.Drawing.Size(141, 31);
             this.SmdSendPickupOrReady.TabIndex = 17;
             this.SmdSendPickupOrReady.Text = "SmdSendPickupOrReady";
             this.SmdSendPickupOrReady.UseVisualStyleBackColor = true;
@@ -307,9 +307,9 @@ namespace chip_counter
             // 
             // SmdBarcodeOK
             // 
-            this.SmdBarcodeOK.Location = new System.Drawing.Point(360, 174);
+            this.SmdBarcodeOK.Location = new System.Drawing.Point(309, 151);
             this.SmdBarcodeOK.Name = "SmdBarcodeOK";
-            this.SmdBarcodeOK.Size = new System.Drawing.Size(164, 36);
+            this.SmdBarcodeOK.Size = new System.Drawing.Size(141, 31);
             this.SmdBarcodeOK.TabIndex = 18;
             this.SmdBarcodeOK.Text = "SmdBarcodeOK";
             this.SmdBarcodeOK.UseVisualStyleBackColor = true;
@@ -339,31 +339,31 @@ namespace chip_counter
             this.panel1.Controls.Add(this.SmdBarcodeReadyFunc);
             this.panel1.Location = new System.Drawing.Point(3, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(523, 376);
+            this.panel1.Size = new System.Drawing.Size(448, 326);
             this.panel1.TabIndex = 21;
             // 
             // label33
             // 
             this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(283, 347);
+            this.label33.Location = new System.Drawing.Point(243, 301);
             this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(83, 15);
+            this.label33.Size = new System.Drawing.Size(72, 13);
             this.label33.TabIndex = 0;
             this.label33.Text = "Robot Control";
             // 
             // label34
             // 
             this.label34.AutoSize = true;
-            this.label34.Location = new System.Drawing.Point(438, 394);
+            this.label34.Location = new System.Drawing.Point(375, 341);
             this.label34.Name = "label34";
-            this.label34.Size = new System.Drawing.Size(83, 15);
+            this.label34.Size = new System.Drawing.Size(69, 13);
             this.label34.TabIndex = 22;
             this.label34.Text = "IO Control =>";
             // 
             // IO_Update_Timer
             // 
             this.IO_Update_Timer.Enabled = true;
-            this.IO_Update_Timer.Interval = 1000;
+            this.IO_Update_Timer.Interval = 500;
             this.IO_Update_Timer.Tick += new System.EventHandler(this.gpio_status_timer_Tick);
             // 
             // IO_Control
@@ -439,7 +439,7 @@ namespace chip_counter
             this.IO_Control.Controls.Add(this.btn_GPIO_IN_1, 1, 2);
             this.IO_Control.Controls.Add(this.btn_GPIO_IN_0, 1, 1);
             this.IO_Control.Controls.Add(this.btn_GPIO_IN_5, 1, 6);
-            this.IO_Control.Location = new System.Drawing.Point(532, 1);
+            this.IO_Control.Location = new System.Drawing.Point(456, 1);
             this.IO_Control.Name = "IO_Control";
             this.IO_Control.RowCount = 17;
             this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
@@ -458,14 +458,14 @@ namespace chip_counter
             this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
-            this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.IO_Control.Size = new System.Drawing.Size(297, 442);
+            this.IO_Control.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
+            this.IO_Control.Size = new System.Drawing.Size(298, 441);
             this.IO_Control.TabIndex = 25;
             // 
             // btn_GPIO_OUT_5
             // 
             this.btn_GPIO_OUT_5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_5.Location = new System.Drawing.Point(179, 159);
+            this.btn_GPIO_OUT_5.Location = new System.Drawing.Point(180, 159);
             this.btn_GPIO_OUT_5.Name = "btn_GPIO_OUT_5";
             this.btn_GPIO_OUT_5.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_5.TabIndex = 46;
@@ -474,118 +474,135 @@ namespace chip_counter
             // 
             // GPIO_OUT_0
             // 
-            this.GPIO_OUT_0.Location = new System.Drawing.Point(150, 29);
+            this.GPIO_OUT_0.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_0.Location = new System.Drawing.Point(151, 29);
             this.GPIO_OUT_0.Name = "GPIO_OUT_0";
             this.GPIO_OUT_0.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_0.TabIndex = 44;
             // 
             // GPIO_OUT_1
             // 
-            this.GPIO_OUT_1.Location = new System.Drawing.Point(150, 55);
+            this.GPIO_OUT_1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_1.Location = new System.Drawing.Point(151, 55);
             this.GPIO_OUT_1.Name = "GPIO_OUT_1";
             this.GPIO_OUT_1.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_1.TabIndex = 43;
             // 
             // GPIO_OUT_2
             // 
-            this.GPIO_OUT_2.Location = new System.Drawing.Point(150, 81);
+            this.GPIO_OUT_2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_2.Location = new System.Drawing.Point(151, 81);
             this.GPIO_OUT_2.Name = "GPIO_OUT_2";
             this.GPIO_OUT_2.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_2.TabIndex = 42;
             // 
             // GPIO_OUT_3
             // 
-            this.GPIO_OUT_3.Location = new System.Drawing.Point(150, 107);
+            this.GPIO_OUT_3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_3.Location = new System.Drawing.Point(151, 107);
             this.GPIO_OUT_3.Name = "GPIO_OUT_3";
             this.GPIO_OUT_3.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_3.TabIndex = 41;
             // 
             // GPIO_OUT_4
             // 
-            this.GPIO_OUT_4.Location = new System.Drawing.Point(150, 133);
+            this.GPIO_OUT_4.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_4.Location = new System.Drawing.Point(151, 133);
             this.GPIO_OUT_4.Name = "GPIO_OUT_4";
             this.GPIO_OUT_4.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_4.TabIndex = 40;
             // 
             // GPIO_OUT_5
             // 
-            this.GPIO_OUT_5.Location = new System.Drawing.Point(150, 159);
+            this.GPIO_OUT_5.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_5.Location = new System.Drawing.Point(151, 159);
             this.GPIO_OUT_5.Name = "GPIO_OUT_5";
             this.GPIO_OUT_5.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_5.TabIndex = 39;
             // 
             // GPIO_OUT_6
             // 
-            this.GPIO_OUT_6.Location = new System.Drawing.Point(150, 185);
+            this.GPIO_OUT_6.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_6.Location = new System.Drawing.Point(151, 185);
             this.GPIO_OUT_6.Name = "GPIO_OUT_6";
             this.GPIO_OUT_6.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_6.TabIndex = 38;
             // 
             // GPIO_OUT_7
             // 
-            this.GPIO_OUT_7.Location = new System.Drawing.Point(150, 211);
+            this.GPIO_OUT_7.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_7.Location = new System.Drawing.Point(151, 211);
             this.GPIO_OUT_7.Name = "GPIO_OUT_7";
             this.GPIO_OUT_7.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_7.TabIndex = 37;
             // 
             // GPIO_OUT_8
             // 
-            this.GPIO_OUT_8.Location = new System.Drawing.Point(150, 237);
+            this.GPIO_OUT_8.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_8.Location = new System.Drawing.Point(151, 237);
             this.GPIO_OUT_8.Name = "GPIO_OUT_8";
             this.GPIO_OUT_8.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_8.TabIndex = 36;
             // 
             // GPIO_OUT_9
             // 
-            this.GPIO_OUT_9.Location = new System.Drawing.Point(150, 263);
+            this.GPIO_OUT_9.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_9.Location = new System.Drawing.Point(151, 263);
             this.GPIO_OUT_9.Name = "GPIO_OUT_9";
             this.GPIO_OUT_9.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_9.TabIndex = 35;
             // 
             // GPIO_OUT_10
             // 
-            this.GPIO_OUT_10.Location = new System.Drawing.Point(150, 289);
+            this.GPIO_OUT_10.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_10.Location = new System.Drawing.Point(151, 289);
             this.GPIO_OUT_10.Name = "GPIO_OUT_10";
             this.GPIO_OUT_10.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_10.TabIndex = 34;
             // 
             // GPIO_OUT_11
             // 
-            this.GPIO_OUT_11.Location = new System.Drawing.Point(150, 315);
+            this.GPIO_OUT_11.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_11.Location = new System.Drawing.Point(151, 315);
             this.GPIO_OUT_11.Name = "GPIO_OUT_11";
             this.GPIO_OUT_11.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_11.TabIndex = 33;
             // 
             // GPIO_OUT_12
             // 
-            this.GPIO_OUT_12.Location = new System.Drawing.Point(150, 341);
+            this.GPIO_OUT_12.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_12.Location = new System.Drawing.Point(151, 341);
             this.GPIO_OUT_12.Name = "GPIO_OUT_12";
             this.GPIO_OUT_12.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_12.TabIndex = 32;
             // 
             // GPIO_OUT_13
             // 
-            this.GPIO_OUT_13.Location = new System.Drawing.Point(150, 367);
+            this.GPIO_OUT_13.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_13.Location = new System.Drawing.Point(151, 367);
             this.GPIO_OUT_13.Name = "GPIO_OUT_13";
             this.GPIO_OUT_13.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_13.TabIndex = 31;
             // 
             // GPIO_OUT_14
             // 
-            this.GPIO_OUT_14.Location = new System.Drawing.Point(150, 393);
+            this.GPIO_OUT_14.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_14.Location = new System.Drawing.Point(151, 393);
             this.GPIO_OUT_14.Name = "GPIO_OUT_14";
             this.GPIO_OUT_14.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_14.TabIndex = 30;
             // 
             // GPIO_OUT_15
             // 
-            this.GPIO_OUT_15.Location = new System.Drawing.Point(150, 419);
+            this.GPIO_OUT_15.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GPIO_OUT_15.Location = new System.Drawing.Point(151, 419);
             this.GPIO_OUT_15.Name = "GPIO_OUT_15";
             this.GPIO_OUT_15.Size = new System.Drawing.Size(23, 20);
             this.GPIO_OUT_15.TabIndex = 29;
             // 
             // GPIO_IN_15
             // 
+            this.GPIO_IN_15.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_15.Location = new System.Drawing.Point(3, 419);
             this.GPIO_IN_15.Name = "GPIO_IN_15";
             this.GPIO_IN_15.Size = new System.Drawing.Size(23, 20);
@@ -593,6 +610,7 @@ namespace chip_counter
             // 
             // GPIO_IN_14
             // 
+            this.GPIO_IN_14.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_14.Location = new System.Drawing.Point(3, 393);
             this.GPIO_IN_14.Name = "GPIO_IN_14";
             this.GPIO_IN_14.Size = new System.Drawing.Size(23, 20);
@@ -600,6 +618,7 @@ namespace chip_counter
             // 
             // GPIO_IN_13
             // 
+            this.GPIO_IN_13.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_13.Location = new System.Drawing.Point(3, 367);
             this.GPIO_IN_13.Name = "GPIO_IN_13";
             this.GPIO_IN_13.Size = new System.Drawing.Size(23, 20);
@@ -607,6 +626,7 @@ namespace chip_counter
             // 
             // GPIO_IN_12
             // 
+            this.GPIO_IN_12.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_12.Location = new System.Drawing.Point(3, 341);
             this.GPIO_IN_12.Name = "GPIO_IN_12";
             this.GPIO_IN_12.Size = new System.Drawing.Size(23, 20);
@@ -614,6 +634,7 @@ namespace chip_counter
             // 
             // GPIO_IN_11
             // 
+            this.GPIO_IN_11.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_11.Location = new System.Drawing.Point(3, 315);
             this.GPIO_IN_11.Name = "GPIO_IN_11";
             this.GPIO_IN_11.Size = new System.Drawing.Size(23, 20);
@@ -621,6 +642,7 @@ namespace chip_counter
             // 
             // GPIO_IN_10
             // 
+            this.GPIO_IN_10.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_10.Location = new System.Drawing.Point(3, 289);
             this.GPIO_IN_10.Name = "GPIO_IN_10";
             this.GPIO_IN_10.Size = new System.Drawing.Size(23, 20);
@@ -628,6 +650,7 @@ namespace chip_counter
             // 
             // GPIO_IN_9
             // 
+            this.GPIO_IN_9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_9.Location = new System.Drawing.Point(3, 263);
             this.GPIO_IN_9.Name = "GPIO_IN_9";
             this.GPIO_IN_9.Size = new System.Drawing.Size(23, 20);
@@ -635,6 +658,7 @@ namespace chip_counter
             // 
             // GPIO_IN_7
             // 
+            this.GPIO_IN_7.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_7.Location = new System.Drawing.Point(3, 211);
             this.GPIO_IN_7.Name = "GPIO_IN_7";
             this.GPIO_IN_7.Size = new System.Drawing.Size(23, 20);
@@ -642,6 +666,7 @@ namespace chip_counter
             // 
             // GPIO_IN_8
             // 
+            this.GPIO_IN_8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_8.Location = new System.Drawing.Point(3, 237);
             this.GPIO_IN_8.Name = "GPIO_IN_8";
             this.GPIO_IN_8.Size = new System.Drawing.Size(23, 20);
@@ -649,6 +674,7 @@ namespace chip_counter
             // 
             // GPIO_IN_6
             // 
+            this.GPIO_IN_6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_6.Location = new System.Drawing.Point(3, 185);
             this.GPIO_IN_6.Name = "GPIO_IN_6";
             this.GPIO_IN_6.Size = new System.Drawing.Size(23, 20);
@@ -656,6 +682,7 @@ namespace chip_counter
             // 
             // GPIO_IN_5
             // 
+            this.GPIO_IN_5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_5.Location = new System.Drawing.Point(3, 159);
             this.GPIO_IN_5.Name = "GPIO_IN_5";
             this.GPIO_IN_5.Size = new System.Drawing.Size(23, 20);
@@ -663,6 +690,7 @@ namespace chip_counter
             // 
             // GPIO_IN_4
             // 
+            this.GPIO_IN_4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_4.Location = new System.Drawing.Point(3, 133);
             this.GPIO_IN_4.Name = "GPIO_IN_4";
             this.GPIO_IN_4.Size = new System.Drawing.Size(23, 20);
@@ -670,6 +698,7 @@ namespace chip_counter
             // 
             // GPIO_IN_3
             // 
+            this.GPIO_IN_3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_3.Location = new System.Drawing.Point(3, 107);
             this.GPIO_IN_3.Name = "GPIO_IN_3";
             this.GPIO_IN_3.Size = new System.Drawing.Size(23, 20);
@@ -677,6 +706,7 @@ namespace chip_counter
             // 
             // GPIO_IN_2
             // 
+            this.GPIO_IN_2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_2.Location = new System.Drawing.Point(3, 81);
             this.GPIO_IN_2.Name = "GPIO_IN_2";
             this.GPIO_IN_2.Size = new System.Drawing.Size(23, 20);
@@ -684,6 +714,7 @@ namespace chip_counter
             // 
             // GPIO_IN_1
             // 
+            this.GPIO_IN_1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_1.Location = new System.Drawing.Point(3, 55);
             this.GPIO_IN_1.Name = "GPIO_IN_1";
             this.GPIO_IN_1.Size = new System.Drawing.Size(23, 20);
@@ -691,6 +722,7 @@ namespace chip_counter
             // 
             // GPIO_IN_0
             // 
+            this.GPIO_IN_0.Dock = System.Windows.Forms.DockStyle.Fill;
             this.GPIO_IN_0.Location = new System.Drawing.Point(3, 29);
             this.GPIO_IN_0.Name = "GPIO_IN_0";
             this.GPIO_IN_0.Size = new System.Drawing.Size(23, 20);
@@ -699,9 +731,9 @@ namespace chip_counter
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(179, 0);
+            this.label4.Location = new System.Drawing.Point(180, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(30, 15);
+            this.label4.Size = new System.Drawing.Size(30, 13);
             this.label4.TabIndex = 26;
             this.label4.Text = "OUT";
             // 
@@ -710,14 +742,14 @@ namespace chip_counter
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(32, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(19, 15);
+            this.label3.Size = new System.Drawing.Size(18, 13);
             this.label3.TabIndex = 26;
             this.label3.Text = "IN";
             // 
             // btn_GPIO_OUT_0
             // 
             this.btn_GPIO_OUT_0.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_0.Location = new System.Drawing.Point(179, 29);
+            this.btn_GPIO_OUT_0.Location = new System.Drawing.Point(180, 29);
             this.btn_GPIO_OUT_0.Name = "btn_GPIO_OUT_0";
             this.btn_GPIO_OUT_0.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_0.TabIndex = 45;
@@ -727,7 +759,7 @@ namespace chip_counter
             // btn_GPIO_OUT_1
             // 
             this.btn_GPIO_OUT_1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_1.Location = new System.Drawing.Point(179, 55);
+            this.btn_GPIO_OUT_1.Location = new System.Drawing.Point(180, 55);
             this.btn_GPIO_OUT_1.Name = "btn_GPIO_OUT_1";
             this.btn_GPIO_OUT_1.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_1.TabIndex = 46;
@@ -737,7 +769,7 @@ namespace chip_counter
             // btn_GPIO_OUT_2
             // 
             this.btn_GPIO_OUT_2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_2.Location = new System.Drawing.Point(179, 81);
+            this.btn_GPIO_OUT_2.Location = new System.Drawing.Point(180, 81);
             this.btn_GPIO_OUT_2.Name = "btn_GPIO_OUT_2";
             this.btn_GPIO_OUT_2.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_2.TabIndex = 47;
@@ -747,7 +779,7 @@ namespace chip_counter
             // btn_GPIO_OUT_3
             // 
             this.btn_GPIO_OUT_3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_3.Location = new System.Drawing.Point(179, 107);
+            this.btn_GPIO_OUT_3.Location = new System.Drawing.Point(180, 107);
             this.btn_GPIO_OUT_3.Name = "btn_GPIO_OUT_3";
             this.btn_GPIO_OUT_3.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_3.TabIndex = 48;
@@ -757,7 +789,7 @@ namespace chip_counter
             // btn_GPIO_OUT_4
             // 
             this.btn_GPIO_OUT_4.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_4.Location = new System.Drawing.Point(179, 133);
+            this.btn_GPIO_OUT_4.Location = new System.Drawing.Point(180, 133);
             this.btn_GPIO_OUT_4.Name = "btn_GPIO_OUT_4";
             this.btn_GPIO_OUT_4.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_4.TabIndex = 49;
@@ -767,7 +799,7 @@ namespace chip_counter
             // btn_GPIO_OUT_6
             // 
             this.btn_GPIO_OUT_6.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_6.Location = new System.Drawing.Point(179, 185);
+            this.btn_GPIO_OUT_6.Location = new System.Drawing.Point(180, 185);
             this.btn_GPIO_OUT_6.Name = "btn_GPIO_OUT_6";
             this.btn_GPIO_OUT_6.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_6.TabIndex = 50;
@@ -777,7 +809,7 @@ namespace chip_counter
             // btn_GPIO_OUT_7
             // 
             this.btn_GPIO_OUT_7.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_7.Location = new System.Drawing.Point(179, 211);
+            this.btn_GPIO_OUT_7.Location = new System.Drawing.Point(180, 211);
             this.btn_GPIO_OUT_7.Name = "btn_GPIO_OUT_7";
             this.btn_GPIO_OUT_7.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_7.TabIndex = 51;
@@ -787,7 +819,7 @@ namespace chip_counter
             // btn_GPIO_OUT_8
             // 
             this.btn_GPIO_OUT_8.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_8.Location = new System.Drawing.Point(179, 237);
+            this.btn_GPIO_OUT_8.Location = new System.Drawing.Point(180, 237);
             this.btn_GPIO_OUT_8.Name = "btn_GPIO_OUT_8";
             this.btn_GPIO_OUT_8.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_8.TabIndex = 52;
@@ -797,7 +829,7 @@ namespace chip_counter
             // btn_GPIO_OUT_9
             // 
             this.btn_GPIO_OUT_9.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_9.Location = new System.Drawing.Point(179, 263);
+            this.btn_GPIO_OUT_9.Location = new System.Drawing.Point(180, 263);
             this.btn_GPIO_OUT_9.Name = "btn_GPIO_OUT_9";
             this.btn_GPIO_OUT_9.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_9.TabIndex = 53;
@@ -807,7 +839,7 @@ namespace chip_counter
             // btn_GPIO_OUT_10
             // 
             this.btn_GPIO_OUT_10.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_10.Location = new System.Drawing.Point(179, 289);
+            this.btn_GPIO_OUT_10.Location = new System.Drawing.Point(180, 289);
             this.btn_GPIO_OUT_10.Name = "btn_GPIO_OUT_10";
             this.btn_GPIO_OUT_10.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_10.TabIndex = 54;
@@ -817,7 +849,7 @@ namespace chip_counter
             // btn_GPIO_OUT_11
             // 
             this.btn_GPIO_OUT_11.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_11.Location = new System.Drawing.Point(179, 315);
+            this.btn_GPIO_OUT_11.Location = new System.Drawing.Point(180, 315);
             this.btn_GPIO_OUT_11.Name = "btn_GPIO_OUT_11";
             this.btn_GPIO_OUT_11.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_11.TabIndex = 55;
@@ -827,7 +859,7 @@ namespace chip_counter
             // btn_GPIO_OUT_12
             // 
             this.btn_GPIO_OUT_12.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_12.Location = new System.Drawing.Point(179, 341);
+            this.btn_GPIO_OUT_12.Location = new System.Drawing.Point(180, 341);
             this.btn_GPIO_OUT_12.Name = "btn_GPIO_OUT_12";
             this.btn_GPIO_OUT_12.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_12.TabIndex = 56;
@@ -837,7 +869,7 @@ namespace chip_counter
             // btn_GPIO_OUT_13
             // 
             this.btn_GPIO_OUT_13.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_13.Location = new System.Drawing.Point(179, 367);
+            this.btn_GPIO_OUT_13.Location = new System.Drawing.Point(180, 367);
             this.btn_GPIO_OUT_13.Name = "btn_GPIO_OUT_13";
             this.btn_GPIO_OUT_13.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_13.TabIndex = 57;
@@ -847,7 +879,7 @@ namespace chip_counter
             // btn_GPIO_OUT_14
             // 
             this.btn_GPIO_OUT_14.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_14.Location = new System.Drawing.Point(179, 393);
+            this.btn_GPIO_OUT_14.Location = new System.Drawing.Point(180, 393);
             this.btn_GPIO_OUT_14.Name = "btn_GPIO_OUT_14";
             this.btn_GPIO_OUT_14.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_14.TabIndex = 58;
@@ -857,7 +889,7 @@ namespace chip_counter
             // btn_GPIO_OUT_15
             // 
             this.btn_GPIO_OUT_15.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_GPIO_OUT_15.Location = new System.Drawing.Point(179, 419);
+            this.btn_GPIO_OUT_15.Location = new System.Drawing.Point(180, 419);
             this.btn_GPIO_OUT_15.Name = "btn_GPIO_OUT_15";
             this.btn_GPIO_OUT_15.Size = new System.Drawing.Size(115, 20);
             this.btn_GPIO_OUT_15.TabIndex = 59;
@@ -866,153 +898,169 @@ namespace chip_counter
             // 
             // btn_GPIO_IN_15
             // 
+            this.btn_GPIO_IN_15.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_15.Location = new System.Drawing.Point(32, 419);
             this.btn_GPIO_IN_15.Name = "btn_GPIO_IN_15";
-            this.btn_GPIO_IN_15.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_15.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_15.TabIndex = 75;
             this.btn_GPIO_IN_15.Text = "Reel 4 Sensor";
             this.btn_GPIO_IN_15.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_14
             // 
+            this.btn_GPIO_IN_14.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_14.Location = new System.Drawing.Point(32, 393);
             this.btn_GPIO_IN_14.Name = "btn_GPIO_IN_14";
-            this.btn_GPIO_IN_14.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_14.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_14.TabIndex = 74;
             this.btn_GPIO_IN_14.Text = "Reel 3 Sensor";
             this.btn_GPIO_IN_14.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_13
             // 
+            this.btn_GPIO_IN_13.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_13.Location = new System.Drawing.Point(32, 367);
             this.btn_GPIO_IN_13.Name = "btn_GPIO_IN_13";
-            this.btn_GPIO_IN_13.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_13.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_13.TabIndex = 73;
             this.btn_GPIO_IN_13.Text = "Reel 2 Sensor";
             this.btn_GPIO_IN_13.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_12
             // 
+            this.btn_GPIO_IN_12.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_12.Location = new System.Drawing.Point(32, 341);
             this.btn_GPIO_IN_12.Name = "btn_GPIO_IN_12";
-            this.btn_GPIO_IN_12.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_12.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_12.TabIndex = 72;
             this.btn_GPIO_IN_12.Text = "Reel 1 Sensor";
             this.btn_GPIO_IN_12.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_11
             // 
+            this.btn_GPIO_IN_11.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_11.Location = new System.Drawing.Point(32, 315);
             this.btn_GPIO_IN_11.Name = "btn_GPIO_IN_11";
-            this.btn_GPIO_IN_11.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_11.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_11.TabIndex = 71;
             this.btn_GPIO_IN_11.Text = "Motor Status";
             this.btn_GPIO_IN_11.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_10
             // 
+            this.btn_GPIO_IN_10.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_10.Location = new System.Drawing.Point(32, 289);
             this.btn_GPIO_IN_10.Name = "btn_GPIO_IN_10";
-            this.btn_GPIO_IN_10.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_10.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_10.TabIndex = 70;
             this.btn_GPIO_IN_10.Text = "Emergency";
             this.btn_GPIO_IN_10.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_9
             // 
+            this.btn_GPIO_IN_9.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_9.Location = new System.Drawing.Point(32, 263);
             this.btn_GPIO_IN_9.Name = "btn_GPIO_IN_9";
-            this.btn_GPIO_IN_9.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_9.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_9.TabIndex = 69;
             this.btn_GPIO_IN_9.Text = "Second Fan";
             this.btn_GPIO_IN_9.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_8
             // 
+            this.btn_GPIO_IN_8.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_8.Location = new System.Drawing.Point(32, 237);
             this.btn_GPIO_IN_8.Name = "btn_GPIO_IN_8";
-            this.btn_GPIO_IN_8.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_8.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_8.TabIndex = 68;
             this.btn_GPIO_IN_8.Text = "Front Area";
             this.btn_GPIO_IN_8.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_7
             // 
+            this.btn_GPIO_IN_7.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_7.Location = new System.Drawing.Point(32, 211);
             this.btn_GPIO_IN_7.Name = "btn_GPIO_IN_7";
-            this.btn_GPIO_IN_7.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_7.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_7.TabIndex = 67;
             this.btn_GPIO_IN_7.Text = "Fan Sensor";
             this.btn_GPIO_IN_7.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_6
             // 
+            this.btn_GPIO_IN_6.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_6.Location = new System.Drawing.Point(32, 185);
             this.btn_GPIO_IN_6.Name = "btn_GPIO_IN_6";
-            this.btn_GPIO_IN_6.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_6.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_6.TabIndex = 66;
             this.btn_GPIO_IN_6.Text = "StageInMCU";
             this.btn_GPIO_IN_6.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_4
             // 
+            this.btn_GPIO_IN_4.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_4.Location = new System.Drawing.Point(32, 133);
             this.btn_GPIO_IN_4.Name = "btn_GPIO_IN_4";
-            this.btn_GPIO_IN_4.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_4.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_4.TabIndex = 65;
             this.btn_GPIO_IN_4.Text = "StageINSensor";
             this.btn_GPIO_IN_4.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_3
             // 
+            this.btn_GPIO_IN_3.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_3.Location = new System.Drawing.Point(32, 107);
             this.btn_GPIO_IN_3.Name = "btn_GPIO_IN_3";
-            this.btn_GPIO_IN_3.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_3.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_3.TabIndex = 64;
             this.btn_GPIO_IN_3.Text = "Return Button";
             this.btn_GPIO_IN_3.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_2
             // 
+            this.btn_GPIO_IN_2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_2.Location = new System.Drawing.Point(32, 81);
             this.btn_GPIO_IN_2.Name = "btn_GPIO_IN_2";
-            this.btn_GPIO_IN_2.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_2.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_2.TabIndex = 63;
             this.btn_GPIO_IN_2.Text = "Start_Button";
             this.btn_GPIO_IN_2.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_1
             // 
+            this.btn_GPIO_IN_1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_1.Location = new System.Drawing.Point(32, 55);
             this.btn_GPIO_IN_1.Name = "btn_GPIO_IN_1";
-            this.btn_GPIO_IN_1.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_1.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_1.TabIndex = 62;
             this.btn_GPIO_IN_1.Text = "Door Close";
             this.btn_GPIO_IN_1.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_0
             // 
+            this.btn_GPIO_IN_0.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_0.Location = new System.Drawing.Point(32, 29);
             this.btn_GPIO_IN_0.Name = "btn_GPIO_IN_0";
-            this.btn_GPIO_IN_0.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_0.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_0.TabIndex = 60;
             this.btn_GPIO_IN_0.Text = "System Power";
             this.btn_GPIO_IN_0.UseVisualStyleBackColor = true;
             // 
             // btn_GPIO_IN_5
             // 
+            this.btn_GPIO_IN_5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btn_GPIO_IN_5.Location = new System.Drawing.Point(32, 159);
             this.btn_GPIO_IN_5.Name = "btn_GPIO_IN_5";
-            this.btn_GPIO_IN_5.Size = new System.Drawing.Size(112, 20);
+            this.btn_GPIO_IN_5.Size = new System.Drawing.Size(113, 20);
             this.btn_GPIO_IN_5.TabIndex = 61;
             this.btn_GPIO_IN_5.Text = "StageOUTSensor";
             this.btn_GPIO_IN_5.UseVisualStyleBackColor = true;
             // 
             // btn_UpdateUI
             // 
-            this.btn_UpdateUI.Location = new System.Drawing.Point(378, 408);
+            this.btn_UpdateUI.Location = new System.Drawing.Point(324, 354);
             this.btn_UpdateUI.Name = "btn_UpdateUI";
-            this.btn_UpdateUI.Size = new System.Drawing.Size(75, 23);
+            this.btn_UpdateUI.Size = new System.Drawing.Size(64, 20);
             this.btn_UpdateUI.TabIndex = 26;
             this.btn_UpdateUI.Text = "UpdateUi";
             this.btn_UpdateUI.UseVisualStyleBackColor = true;
@@ -1020,17 +1068,17 @@ namespace chip_counter
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(835, 455);
+            this.ClientSize = new System.Drawing.Size(757, 442);
             this.Controls.Add(this.btn_UpdateUI);
             this.Controls.Add(this.IO_Control);
             this.Controls.Add(this.label34);
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
             this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_Close);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.IO_Control.ResumeLayout(false);
