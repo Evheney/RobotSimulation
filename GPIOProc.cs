@@ -108,26 +108,6 @@ namespace chip_counter
                 return null;
             }
         }
-        //public int STATE
-        //{
-        //    get
-        //    {
-        //        if (_gpio_mode == MCU_GPIO_MODE)
-        //            return (_mcu_device == null ? GPIO_STATE.ERROR : _mcu_device.MACHINE_STATE);
-        //        else
-        //            return GPIO_STATE.RUNNING;
-        //    }
-        //    set
-        //    {
-        //        if (_gpio_mode == MCU_GPIO_MODE)
-        //        {
-        //            if (_mcu_device != null)
-        //            {
-        //                _mcu_device.MACHINE_STATE = value;
-        //            }
-        //        }
-        //    }
-        //}
 
         public static GPIOProc Instance
         {
