@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace chip_counter
@@ -13,6 +14,7 @@ namespace chip_counter
             InitializeButtons();
             InitializeGpioINPanels();
             InitializeGpioOUTPanels();
+            InitWatchdog();
             string ini_filepath = System.IO.Directory.GetCurrentDirectory() + "\\CHIP_COUNTER.INI";
 
             info.config = new configure(ini_filepath);
@@ -21,6 +23,13 @@ namespace chip_counter
             IO_Update_Timer.Interval = 500;
             IO_Update_Timer.Start();
         }
+
+        private double minCurrent;
+        private double maxCurrent;
+        private int minVoltage;
+        private int maxVoltage;
+        private string name;
+
         private bool m_forcibly = false;
         ModSmdRobotControl control = ModSmdRobotControl.Instance;
 
@@ -194,6 +203,119 @@ namespace chip_counter
             control.SmdBarcodeOK("OK");
         }
         #endregion
+        private void InitWatchdog() 
+        {
+            // Specify the path to the .ini file
+            string iniFilePath = Directory.GetCurrentDirectory() + "\\CHIP_COUNTER.INI";
+
+            // Create a new instance of FileSystemWatcher
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(iniFilePath), Path.GetFileName(iniFilePath));
+
+            // Set the event handlers
+            watcher.Changed += OnFileChanged;
+            watcher.Created += OnFileCreated;
+            watcher.Deleted += OnFileDeleted;
+            watcher.Renamed += OnFileRenamed;
+
+            // Enable the watcher
+            watcher.EnableRaisingEvents = true;
+
+            Console.WriteLine($"Watching {iniFilePath}. Press Enter to exit.");
+            Console.ReadLine();
+
+            // Stop watching when Enter is pressed
+            //watcher.EnableRaisingEvents = false;
+        }
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            // Handle file changes
+            Log.Info($"File {e.FullPath} has been {e.ChangeType.ToString().ToLower()}d.");
+            // You can implement further processing here, such as reading the .ini file and reacting to changes.
+
+            // Reload values from the .ini file
+            LoadIniFileValues(e.FullPath);
+
+            // Perform actions based on the loaded values
+            Log.Info($"minCurrent: {minCurrent}");
+            Log.Info($"maxCurrent: {maxCurrent}");
+            Log.Info($"minVoltage: {minVoltage}");
+            Log.Info($"maxVoltage: {maxVoltage}");
+            Log.Info($"name: {name}");
+
+        }
+        private void OnFileCreated(object sender, FileSystemEventArgs e)
+        {
+            // Handle file created
+            Log.Info($"File {e.FullPath} has been {e.ChangeType.ToString().ToLower()}d.");
+            // You can implement further processing here, such as reading the .ini file and reacting to changes.
+        }
+        private void OnFileDeleted(object sender, FileSystemEventArgs e)
+        {
+            // Handle file changes
+            Log.Info($"File {e.FullPath} has been {e.ChangeType.ToString().ToLower()}d.");
+            // You can implement further processing here, such as reading the .ini file and reacting to changes.
+        }
+
+        private void OnFileRenamed(object sender, RenamedEventArgs e)
+        {
+            // Handle file renaming
+            Log.Info($"File {e.OldFullPath} has been renamed to {e.FullPath}.");
+            // You can implement further processing here.
+        }
+
+        private void LoadIniFileValues(string filePath)
+        {
+            // Read values from the .ini file and update the variables
+            Dictionary<string, string> iniValues = new Dictionary<string, string>();
+
+            try
+            {
+                // Read all lines from the .ini file
+                string[] lines = File.ReadAllLines(filePath);
+
+                foreach (string line in lines)
+                {
+                    // Split each line into key and value
+                    string[] parts = line.Split('=');
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim().ToLower();
+                        string value = parts[1].Trim();
+
+                        iniValues[key] = value;
+                    }
+                }
+
+                // Update variables with the parsed values
+                if (iniValues.ContainsKey("USE_ROBOT ") && bool.TryParse(iniValues["USE_ROBOT "], out bool userobotValue))
+                
+                    info.config.USE_ROBOT = userobotValue;
+                    UIUpdate();
+                
+
+                if (iniValues.ContainsKey("GPIO_MODE") && int.TryParse(iniValues["GPIO_MODE"], out int gpiomodeValue))
+                    info.config.GPIO_MODE = gpiomodeValue;
+
+                if (iniValues.ContainsKey("mincurrent") && double.TryParse(iniValues["mincurrent"], out double minCurrentValue))
+                    minCurrent = minCurrentValue;
+
+                if (iniValues.ContainsKey("maxcurrent") && double.TryParse(iniValues["maxcurrent"], out double maxCurrentValue))
+                    maxCurrent = maxCurrentValue;
+
+                if (iniValues.ContainsKey("minvoltage") && int.TryParse(iniValues["minvoltage"], out int minVoltageValue))
+                    minVoltage = minVoltageValue;
+
+                if (iniValues.ContainsKey("maxvoltage") && int.TryParse(iniValues["maxvoltage"], out int maxVoltageValue))
+                    maxVoltage = maxVoltageValue;
+
+                if (iniValues.ContainsKey("name"))
+                    name = iniValues["name"];
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Error loading values from the .ini file: {ex.Message}");
+            }
+        }
 
         private void InitializeButtons()
         {
@@ -444,6 +566,7 @@ namespace chip_counter
         {
             IO_Update_Timer.Stop();
             gpio.DeInit();
+
 
         }
     }
